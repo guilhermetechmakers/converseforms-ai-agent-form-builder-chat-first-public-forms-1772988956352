@@ -1,2 +1,4 @@
+export { AuthenticationLayout } from './AuthenticationLayout'
+export { PasswordField } from './PasswordField'
 export { PasswordStrengthMeter } from './PasswordStrengthMeter'
-export { SocialLoginButtons } from './SocialLoginButtons'
+export { SocialLoginButtons, OAuthButtons } from './SocialLoginButtons'
