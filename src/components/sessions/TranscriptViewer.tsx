@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,10 +38,10 @@ export function TranscriptViewer({
   }
 
   const highlightQuery = searchQuery.trim().toLowerCase()
-  const highlight = (text: string) => {
+  const highlight = (text: string): ReactNode => {
     if (!highlightQuery) return text
     const parts = text.split(new RegExp(`(${highlightQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'))
-    return parts.map((part, i) =>
+    return parts.map((part: string, i: number) =>
       part.toLowerCase() === highlightQuery ? (
         <mark key={i} className="bg-warning/30 rounded px-0.5">
           {part}
@@ -135,9 +135,27 @@ export function TranscriptViewer({
                         )}
                       </Button>
                     )}
-                    <div className="text-xs opacity-80 mt-1">
-                      {msg.timestamp}
+                    <div className="text-xs opacity-80 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span>{msg.timestamp}</span>
+                      {Boolean(msg.model ?? (msg.metadata && 'model' in msg.metadata ? msg.metadata.model : null)) && (
+                        <span className="text-muted-foreground" title="Model">
+                          {((): string => typeof msg.model === 'string' ? msg.model : (msg.metadata && 'model' in msg.metadata ? String(msg.metadata.model ?? '') : ''))()}
+                        </span>
+                      )}
+                      {(msg.tokens != null || (msg.metadata && 'tokens' in msg.metadata && msg.metadata.tokens != null)) ? (
+                        <span className="text-muted-foreground" title="Tokens">
+                          {Number(msg.tokens ?? (msg.metadata && 'tokens' in msg.metadata ? msg.metadata.tokens : 0))} tokens
+                        </span>
+                      ) : null}
                     </div>
+                    {Boolean(msg.prompt ?? (msg.metadata && 'prompt' in msg.metadata ? msg.metadata.prompt : null)) && (
+                      <details className="mt-1 text-xs text-muted-foreground">
+                        <summary className="cursor-pointer hover:text-foreground">Prompt</summary>
+                        <pre className="mt-1 whitespace-pre-wrap rounded bg-muted/50 p-2 font-mono">
+                          {((): string => typeof msg.prompt === 'string' ? msg.prompt : (msg.metadata && 'prompt' in msg.metadata ? String(msg.metadata.prompt ?? '') : ''))()}
+                        </pre>
+                      </details>
+                    )}
                   </div>
                   {isUser && (
                     <User

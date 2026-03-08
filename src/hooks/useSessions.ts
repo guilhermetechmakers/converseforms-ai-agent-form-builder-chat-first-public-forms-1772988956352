@@ -60,9 +60,9 @@ export function useSession(id: string | undefined) {
   })
 }
 
-export function useSessionExport(id: string | undefined, format: 'csv' | 'json') {
+export function useSessionExport(id: string | undefined) {
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ format }: { format: 'csv' | 'json' }) => {
       if (!id) throw new Error('Session id required')
       const blob = await sessionsApi.exportSession(id, format)
       return { blob, filename: `session-${id}.${format}` }
@@ -122,12 +122,31 @@ export function useResendSessionWebhook() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => sessionsApi.resendWebhook(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: sessionKeys.all })
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: sessionKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: sessionKeys.lists() })
       toast.success('Webhook resent.')
     },
     onError: (err: Error) => {
       toast.error(err?.message ?? 'Resend webhook failed.')
+    },
+  })
+}
+
+export function useMarkSessionReviewed() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, reviewed }: { id: string; reviewed: boolean }) =>
+      sessionsApi.markReviewed(id, reviewed),
+    onSuccess: (updated: SessionDetail | undefined) => {
+      if (updated?.id) {
+        queryClient.setQueryData(sessionKeys.detail(updated.id), updated)
+      }
+      queryClient.invalidateQueries({ queryKey: sessionKeys.lists() })
+      toast.success(updated?.reviewedAt ? 'Session marked as reviewed.' : 'Review status cleared.')
+    },
+    onError: (err: Error) => {
+      toast.error(err?.message ?? 'Update failed.')
     },
   })
 }
