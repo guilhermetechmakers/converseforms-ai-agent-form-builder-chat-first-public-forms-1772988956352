@@ -266,6 +266,39 @@ export function useAdminRefundInvoice() {
   })
 }
 
+export function useAdminApplyCredit() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: { customerId: string; amount: number; reason: string }) =>
+      adminApi.applyCredit(payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: adminKeys.invoices })
+      qc.invalidateQueries({ queryKey: adminKeys.stats })
+      toast.success('Credit applied')
+    },
+    onError: (e: Error) => toast.error(e?.message ?? 'Apply credit failed'),
+  })
+}
+
+export function useAdminCreatePromo() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: {
+      code: string
+      discountPercent?: number
+      discountAmount?: number
+      validFrom?: string
+      validTo?: string
+      usageLimit?: number
+    }) => adminApi.createPromo(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.stats })
+      toast.success('Promo code created')
+    },
+    onError: (e: Error) => toast.error(e?.message ?? 'Create promo failed'),
+  })
+}
+
 export function useUpdateAdminFlag() {
   const qc = useQueryClient()
   return useMutation({

@@ -46,6 +46,20 @@ export const adminApi = {
   refundInvoice: (id: string) => api.post(`${ADMIN_PREFIX}/invoices/${id}/refund`, {}),
   chargeInvoice: (id: string) => api.patch<AdminInvoice>(`${ADMIN_PREFIX}/invoices/${id}/charge`, {}),
 
+  /** POST /api/admin/billing/credits */
+  applyCredit: (payload: { customerId: string; amount: number; reason: string }) =>
+    api.post<{ success: boolean }>(`${ADMIN_PREFIX}/billing/credits`, payload),
+
+  /** POST /api/admin/billing/promo */
+  createPromo: (payload: {
+    code: string
+    discountPercent?: number
+    discountAmount?: number
+    validFrom?: string
+    validTo?: string
+    usageLimit?: number
+  }) => api.post<{ id: string; code: string }>(`${ADMIN_PREFIX}/billing/promo`, payload),
+
   getLogs: (params?: { type?: string; severity?: string; from?: string; to?: string }) => {
     const q = params ? new URLSearchParams(params as Record<string, string>).toString() : ''
     return api.get<unknown>(`${ADMIN_PREFIX}/logs${q ? `?${q}` : ''}`)

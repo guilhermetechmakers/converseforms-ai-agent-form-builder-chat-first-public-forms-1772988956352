@@ -17,6 +17,8 @@ import Templates from '@/pages/Templates'
 import DashboardTemplates from '@/pages/DashboardTemplates'
 import Webhooks from '@/pages/Webhooks'
 import Billing from '@/pages/Billing'
+import BillingHistory from '@/pages/BillingHistory'
+import BillingCheckout from '@/pages/BillingCheckout'
 import DashboardSettings from '@/pages/DashboardSettings'
 import {
   AdminLayout,
@@ -75,6 +77,8 @@ export default function App() {
           <Route path="/dashboard/templates" element={<DashboardTemplates />} />
           <Route path="/dashboard/webhooks" element={<Webhooks />} />
           <Route path="/dashboard/billing" element={<Billing />} />
+          <Route path="/dashboard/billing/history" element={<BillingHistory />} />
+          <Route path="/dashboard/billing/checkout" element={<BillingCheckout />} />
           <Route path="/dashboard/settings" element={<DashboardSettings />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<DashboardOverview />} />

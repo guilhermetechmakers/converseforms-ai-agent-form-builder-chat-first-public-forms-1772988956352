@@ -9,6 +9,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Receipt,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -21,6 +22,7 @@ const navItems = [
   { to: '/dashboard/templates', label: 'Templates', icon: FileText },
   { to: '/dashboard/webhooks', label: 'Webhooks', icon: Webhook },
   { to: '/dashboard/billing', label: 'Billing', icon: CreditCard },
+  { to: '/dashboard/billing/history', label: 'Billing history', icon: Receipt },
   { to: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 

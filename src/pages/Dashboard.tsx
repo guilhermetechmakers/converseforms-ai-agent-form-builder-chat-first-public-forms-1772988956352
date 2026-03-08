@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   BarChart3,
   ArrowRight,
+  CreditCard,
+  Receipt,
 } from 'lucide-react'
 import {
   LineChart,
@@ -68,12 +70,26 @@ export default function Dashboard() {
                 <h1 className="text-2xl font-semibold text-foreground">Overview</h1>
                 <p className="text-muted-foreground">Monitor your agents and sessions.</p>
               </div>
-              <Button asChild>
-                <Link to="/dashboard/agents/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create agent
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/dashboard/billing">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Billing
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/dashboard/billing/history">
+                    <Receipt className="mr-2 h-4 w-4" />
+                    Invoices
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/dashboard/agents/new">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create agent
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -242,9 +258,17 @@ export default function Dashboard() {
                   <CardTitle>Recent sessions</CardTitle>
                   <CardDescription>Latest activity</CardDescription>
                 </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/dashboard/sessions">View all</Link>
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/dashboard/billing">
+                      <CreditCard className="mr-1 h-4 w-4" />
+                      Billing
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/dashboard/sessions">View all</Link>
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {recentLoading ? (
