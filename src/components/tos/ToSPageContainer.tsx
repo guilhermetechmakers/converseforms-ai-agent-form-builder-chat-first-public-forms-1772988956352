@@ -100,7 +100,7 @@ export function ToSPageContainer({
 
               {showAcceptancePanel && typeof onAccept === 'function' && (
                 <div className="mt-10">
-                  <AcceptancePanelPlaceholder onAccept={onAccept} />
+                  <AcceptancePanel onAccept={onAccept} />
                 </div>
               )}
             </div>
@@ -109,9 +109,4 @@ export function ToSPageContainer({
       </div>
     </div>
   )
-}
-
-function AcceptancePanelPlaceholder({ onAccept }: { onAccept: (accepted: boolean) => void }) {
-  const { AcceptancePanel } = require('./AcceptancePanel')
-  return <AcceptancePanel onAccept={onAccept} />
 }

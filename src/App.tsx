@@ -80,6 +80,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/tos" element={<Terms />} />
           <Route path="/help" element={<Help />} />
           <Route path="/about" element={<Help />} />
           <Route path="/pricing" element={<Landing />} />

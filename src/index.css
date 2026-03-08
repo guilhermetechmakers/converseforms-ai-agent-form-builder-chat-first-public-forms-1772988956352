@@ -109,3 +109,25 @@
     height: 0;
   }
 }
+
+/* Print: hide chrome (navbar, footer, toolbar), keep ToS/content legible */
+@media print {
+  header,
+  footer,
+  .print\:hidden,
+  a[href="#main-content"] {
+    display: none !important;
+  }
+
+  .tos-page {
+    max-width: 100%;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  main {
+    padding-top: 0;
+  }
+}
