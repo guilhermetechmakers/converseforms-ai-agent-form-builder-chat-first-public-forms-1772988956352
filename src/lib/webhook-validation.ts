@@ -31,12 +31,12 @@ export function sanitizeHeaders(
   const raw = headers ?? {}
   const out: Record<string, string> = {}
   for (const [k, v] of Object.entries(raw)) {
-    if (typeof k === 'string' && typeof v === 'string') {
-      const key = k.trim()
-      const val = v.trim()
-      if (key && val && key.length <= MAX_HEADER_KEY_LENGTH && val.length <= MAX_HEADER_VALUE_LENGTH) {
-        out[key] = val
-      }
+    if (typeof k !== 'string' || typeof v !== 'string') continue
+    const key = k.trim()
+    const val = v.trim()
+    if (key.startsWith('__new_')) continue
+    if (key && val && key.length <= MAX_HEADER_KEY_LENGTH && val.length <= MAX_HEADER_VALUE_LENGTH) {
+      out[key] = val
     }
   }
   return out
