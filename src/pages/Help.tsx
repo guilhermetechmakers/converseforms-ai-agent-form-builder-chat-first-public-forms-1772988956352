@@ -1,53 +1,90 @@
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
 import { AnimatedPage } from '@/components/AnimatedPage'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { HelpCircle, Book, Mail } from 'lucide-react'
+import {
+  GettingStartedGuide,
+  FAQsAccordion,
+  DeveloperDocsLinks,
+  ContactSupportForm,
+} from '@/components/help'
+import { getFaqs } from '@/api/help'
+import type { FAQItem } from '@/types/help'
 
+/**
+ * About & Help page: guides, FAQs, developer docs links, and contact form.
+ * All array data is guarded (data ?? [], Array.isArray) for runtime safety.
+ */
 export default function Help() {
+  const [faqs, setFaqs] = useState<FAQItem[]>([])
+  const [faqsLoaded, setFaqsLoaded] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    getFaqs()
+      .then((data) => {
+        if (cancelled) return
+        const list = Array.isArray(data) ? data : []
+        setFaqs(list)
+      })
+      .finally(() => {
+        if (!cancelled) setFaqsLoaded(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <AnimatedPage>
       <Navbar />
-      <main className="min-h-screen px-6 py-12">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="text-3xl font-bold text-foreground">Help & FAQ</h1>
-          <p className="mt-2 text-muted-foreground">Get started and find answers to common questions.</p>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <HelpCircle className="h-10 w-10 text-primary" />
-                <CardTitle>Getting started</CardTitle>
-                <CardDescription>Create your first agent, add fields, set persona, and publish your chat link.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" asChild>
-                  <Link to="/dashboard/agents/new">Create agent</Link>
-                </Button>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <Book className="h-10 w-10 text-primary" />
-                <CardTitle>Documentation</CardTitle>
-                <CardDescription>API reference, webhooks, and embedding options for developers.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline">View docs</Button>
-              </CardContent>
-            </Card>
+      <main className="min-h-screen bg-background">
+        {/* Hero */}
+        <section className="border-b border-border bg-muted/20 px-6 py-16 md:py-20">
+          <div className="mx-auto max-w-container text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-[56px]">
+              About & Help
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+              Learn how ConverseForms works, get answers to common questions, and find
+              developer docs for webhooks and API integration.
+            </p>
           </div>
-          <Card className="mt-8">
-            <CardHeader>
-              <Mail className="h-10 w-10 text-primary" />
-              <CardTitle>Contact support</CardTitle>
-              <CardDescription>Need help? Send us a message and we'll get back to you.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button>Contact support</Button>
-            </CardContent>
-          </Card>
+        </section>
+
+        {/* Content: 12-col grid, stacked on mobile */}
+        <div className="mx-auto max-w-container px-6 py-12 md:px-8 md:py-16">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+            {/* Getting started - full width on mobile, 7 cols on desktop */}
+            <section className="lg:col-span-7">
+              <GettingStartedGuide />
+            </section>
+
+            {/* FAQs - full width, then 5 cols on desktop */}
+            <section className="lg:col-span-5">
+              <div className="rounded-[10px] border border-border bg-card p-6 shadow-card">
+                {faqsLoaded && <FAQsAccordion faqs={faqs.length > 0 ? faqs : undefined} />}
+                {!faqsLoaded && (
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-6 w-48 rounded bg-muted" />
+                    <div className="h-10 w-full rounded bg-muted" />
+                    <div className="h-12 w-full rounded bg-muted" />
+                    <div className="h-12 w-full rounded bg-muted" />
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Developer docs - full width */}
+            <section className="lg:col-span-12">
+              <DeveloperDocsLinks />
+            </section>
+
+            {/* Contact form - full width */}
+            <section className="lg:col-span-12">
+              <ContactSupportForm />
+            </section>
+          </div>
         </div>
       </main>
       <Footer />
