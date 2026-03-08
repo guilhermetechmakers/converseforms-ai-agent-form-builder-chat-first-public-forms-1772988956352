@@ -31,6 +31,8 @@ export interface ExtractedField {
   source?: 'user' | 'extracted' | 'validated'
   /** Validation status for display */
   validationStatus?: 'valid' | 'invalid' | 'pending' | 'error'
+  errorCode?: string
+  message?: string
 }
 
 /** Field with value and validation metadata for Session Viewer */
