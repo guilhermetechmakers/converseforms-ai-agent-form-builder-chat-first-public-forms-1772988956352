@@ -326,250 +326,304 @@ All dashboard pages should be nested inside the dashboard layout, not separate r
 
 ## User Design Requirements
 
-# Landing Page Development Prompt
+# Agent List Page Prompt for AI Development Tool
 
-Overview
-You are building the public-facing Landing Page for ConverseForms — an AI Agent Form Builder. This page serves as the public marketing gateway describing the product, its features, pricing CTA, and a direct link to a public demo agent. The primary goal is to convert visitors into sign-ups or to let them try a demo public agent immediately. The design system, color palette, typography, and UI tokens described below must be followed precisely. All code must guard against null/undefined values and follow the runtime safety rules listed in the project’s mandatory coding standards.
+You are building the Agent List Page for a no-code AI Agent Form Builder platform. The goal is to deliver a production-ready, scalable frontend and backend blueprint (with integration points) that adheres to strict runtime safety rules and design system guidelines provided. The page must render a list of agents owned by the current user/organization, show status, session counts, last activity, and provide actions (edit, duplicate, publish, archive). It must integrate with the Agent Builder (CRUD) and Dashboard components, support filtering, searching, sorting, bulk actions, and clean transitions. All code and specs must guard against null/undefined values before array methods, initialize arrays in useState with proper types, and follow the runtime safety rules highlighted in the project brief.
 
-Project Context Summary
-- Product: ConverseForms — AI agent form builder that generates public links to a chat-based form collection experience.
-- Public Landing Page should show hero content, feature overview, pricing teaser, testimonials, and a public demo agent link.
-- Assets: App Logo (primary brand logo used across product, marketing site, favicon, emails).
-- No external APIs are required for this task beyond the visible UI layer; all interactions can be mocked or wired to placeholder endpoints as needed.
+Structure of the prompt
+- Overview
+- Page Description (Full Detail)
+- Components to Build
+- Implementation Requirements
+  - Frontend
+  - Backend
+  - Integration
+- User Experience Flow
+- Technical Specifications
+  - Data Models
+  - API Endpoints
+  - Security
+  - Validation
+- Acceptance Criteria
+- UI/UX Guidelines
+- Visual Style (Color Palette, Typography, Key Design Elements)
+- Mandatory Coding Standards — Runtime Safety
+- Project Context Notes
 
-What this task accomplishes
-- Create a polished, marketing-oriented landing page that clearly communicates product value, captures leads with sign-up CTAs, and enables visitors to launch a demo public agent with a single click.
-- Ensure accessibility, responsive design, and parity with the design system (colors, typography, spacing, cards, navigation, and micro-interactions).
-- Implement frontend guards for null/undefined values when consuming data, and ensure safe rendering for all list/map data.
+Now, the complete, actionable prompt
 
-Page Description (Full Detail)
-What this page is
-- A public marketing Landing Page that introduces ConverseForms, highlights core features (Agent Builder, Public Links, Persona, Integrations), shows a pricing teaser, showcases testimonials/use cases, and provides a direct public demo agent link.
+1) Overview
+- Build the Agent List Page as the primary management surface for agents owned by the user/organization.
+- Display agent name, avatar/thumbnail, status (draft, published), session counts, last activity timestamp, and a set of quick actions.
+- Provide filtering, searching, sorting, bulk actions, and an entry point to create/edit agents via the Agent Builder.
+- Ensure data safety: guard against null/undefined values for all array operations, initialize useState with proper types, and sanitize API responses as specified.
 
-Goals
-- Convert visitors to sign-ups or initiate a free public demo agent experience with one click.
-- Highlight value propositions, provide social proof, and route users to pricing or signup flows.
-- Provide accessible navigation, a prominent hero CTA, and a stable, responsive UI pattern.
+2) Page Description (Full Detail)
+What this page is:
+- A responsive Agent List Page that lists agents owned by the current user or organization. Each agent item shows:
+  - Avatar/thumbnail
+  - Agent name
+  - Status badge (draft or published)
+  - Session counts (per agent)
+  - Last activity timestamp
+  - Inline actions: Edit, Duplicate, Publish/Unpublish, Archive
+  - Optional context actions: View analytics, export
+- Goals:
+  - Enable fast discovery, editing, duplication, and publishing of agents
+  - Support creating new agents via a prominent Create Agent CTA that opens the Agent Builder
+  - Allow bulk actions (publish/unpublish, export, archive) for selected agents
+  - Provide filters (status), search by name, and sorting by last activity or session counts
+  - Maintain parity with connected pages: Agent Builder / Editor and Dashboard
+- Connected features:
+  - Agent Builder (CRUD): Create, read, update, delete with full configuration (fields, persona, appearance, context)
+  - Dashboard: Quick metrics summary and recent session insights
+- UI elements and guidance:
+  - Agents List: Card Grid or Table View that adapts to screen size
+  - Filter Bar: Status filter chips, search input, sort dropdown
+  - Bulk Actions Bar: Checkboxes for multi-select and bulk action dropdown/panel
+  - Create Agent CTA: Prominent button aligned with design system
+  - Empty state messaging with guidance to create the first agent
+- API integrations:
+  - Data retrieval for agents per user/org
+  - Actions trigger (edit, duplicate, publish, archive) invoke corresponding backend endpoints
+  - No external APIs beyond internal app APIs (per PROJECT CONTEXT)
 
-Connected UI/Pages
-- [asset] App Logo: Primary brand logo to be displayed in header, footer, hero, favicon, and emails.
-- [page] Login / Signup Page: A separate combined authentication entry that enables email/password login, SSO options, and signup flow (to be integrated as a route from header CTAs like Sign Up or Login).
+3) Components to Build
+- AgentListPage
+  - Props: userId, organizationId, initialFilters (optional)
+  - State: agents[], searchQuery, statusFilter, sortKey, selectedIds[]
+  - Sub-components:
+    - AgentCard (or AgentListRow for table view)
+      - Props: agent object, onEdit, onDuplicate, onPublishToggle, onArchive
+    - FilterBar
+      - Props: searchQuery, statusFilter, onSearchChange, onStatusChange, onSortChange
+    - BulkActionsBar
+      - Props: selectedIds[], onPublishBulk, onArchiveBulk, onExportBulk, onClearSelection
+    - CreateAgentCTA
+      - Opens Agent Builder (modal or dedicated page)
+- AgentCard / AgentListRow
+  - UI: avatar, name, status badge, sessionCount, lastActivity, small action icons or dropdown
+  - Safety: ensure all arrays accessed are guarded: (agent?.sessions ?? 0), etc.
+- StatusBadge
+  - Simple pill with color coding for draft (neutral) vs published (green/blue)
+- EmptyState
+  - Guidance card with CTA to create an agent
+- AgentBuilderLauncher
+  - Trigger API to open Agent Builder (modal or route)
+- AnalyticsPreview (optional)
+  - Lightweight micro-visuals for last few sessions (sparklines)
 
-UI Elements & Visual Guidance
-- Hero Section
-  - Headline: bold, centered, high-contrast copy describing the product’s promise.
-  - Subtext: concise supporting paragraph.
-  - CTAs: Primary CTA “Try Demo” and secondary CTA “Sign Up” (aligned horizontally on desktop, stacked on small screens).
-  - Public Live Demo Link: a clearly labeled link or button that opens a public chat demo in a full-page view.
-  - Visual focal area: center card overlay above a subtle background (map-like wash or soft gradient) with a radial fade focusing attention to center content.
-- Features Overview (3–5 feature cards)
-  - Cards describe Agent Builder, Public Links, Persona, and Integrations.
-  - Each card includes: icon, title, 1–2 sentence description, and a micro CTA or tag.
-- Pricing Teaser
-  - Snapshot of tiers (e.g., Free, Pro, Enterprise) with quick highlights and CTA to Pricing page or signup.
-- Testimonials / Use Cases
-  - 2–3 quotes with logos, short descriptions, and author attribution.
-- Footer
-  - Quick links: About, Help, Privacy, Terms, Contact, Social icons.
-- Navigation
-  - Topbar: Left-aligned compact wordmark/logo; center muted navigation links; right-aligned Login link plus primary CTA (Join / Create Agent) styled as a solid pill.
-- Visual Elements
-  - Card design: white background, 10–12px radius, subtle border or shadow, with hover lift and scale effects.
-  - Data visualization: minimal, blue/neutral accents; sparklines or small charts in cards if used.
-  - Map/pin visuals: optional soft map wash behind hero content to reinforce context without distraction.
+4) Implementation Requirements
 
-Mandatory Coding Standards — Runtime Safety
-CRITICAL: All generated code MUST guard against null/undefined values before using array methods, and follow the runtime safety rules described:
-1. Supabase-like data: Use data ?? [] when querying data; ensure items are arrays before mapping.
-2. Array methods: Guard with (items ?? []) or Array.isArray(items) ? items.map(...) : [] for all .map, .filter, .reduce, etc.
-3. useState defaults: For arrays, initialize with useState<Type[]>([]) to avoid undefined arrays.
-4. API responses: Validate response shapes: const list = Array.isArray(response?.data) ? response.data : [].
-5. Optional chaining: Use obj?.property?.nested for safe access.
-6. Destructuring with defaults: const { items = [], count = 0 } = response ?? {}.
+Frontend
+- UI Components and Pages
+  - Use the design system from the Visual Style section exactly (colors, typography, spacing, etc.)
+  - Agent List rendered as a responsive grid of cards or a compact table depending on viewport
+  - Implement a top filter bar with:
+    - Search input (name-based)
+    - Status filter chips: Draft, Published, All
+    - Sort dropdown: Last Activity, Session Count, Name
+  - Bulk selection: checkboxes to select multiple agents
+  - Bulk actions: Publish, Archive, Export
+  - Per-agent actions: Edit, Duplicate, Publish/Unpublish toggle, Archive
+  - Create Agent button: prominent CTA to open Agent Builder
+  - Empty state messaging and a path to create the first agent
+- Data Handling
+  - Fetch agents via API (GET /api/agents?ownerId=...&orgId=...&status=...&search=...&sort=...)
+  - Use data ?? [] for result arrays
+  - Guard all array ops: (agents ?? []).map(...) and Array.isArray(agents) ? agents.map(...) : []
+  - Normalize API response: const items = Array.isArray(response?.data) ? response.data : []
+  - Each agent object should include: id, name, avatarUrl, status, sessionCount, lastActivityAt, canEdit, etc.
+- State Management
+  - useState<Agent[]>([]) for agents
+  - useState<string>("") for search
+  - useState<string>("all") for status
+  - useState<string>("lastActivity") for sort
+  - useState<string[]>([]) for selectedIds
+- Interactions
+  - Debounced search input to avoid excessive API calls
+  - Confirm dialogs for destructive actions (archive)
+  - Optimistic UI updates for actions with error fallback
+- Accessibility
+  - All interactive elements must have ARIA labels and keyboard navigability
+  - Focus management on modal open
+- Performance
+  - Pagination or infinite scroll for large agent sets? Implement at least paginated fetch (page size 20) with next/prev
+  - Client-side filtering should rely on server when possible; fallback to client-side when needed
+
+Backend
+- API Endpoints (examples; align with your actual framework)
+  - GET /api/agents
+    - Query params: ownerId, orgId, status, search, sort, page, pageSize
+    - Returns: { data: Agent[], total: number }
+  - POST /api/agents
+    - Body: agent configuration (fields, persona, appearance, context)
+    - Returns: created Agent
+  - GET /api/agents/{id}
+    - Returns: Agent details
+  - PUT /api/agents/{id}
+    - Body: updated agent configuration
+    - Returns: updated Agent
+  - POST /api/agents/{id}/duplicate
+    - Returns: duplicated Agent
+  - POST /api/agents/{id}/publish
+    - Toggles publish state
+  - POST /api/agents/{id}/archive
+    - Archives the agent
+  - POST /api/agents/bulk
+    - Body: { action: "publish"|"archive"|"export", ids: string[] }
+    - Returns: status/result
+- Database Tables (conceptual)
+  - agents: id, ownerId, orgId, name, avatarUrl, status (draft|published), createdAt, updatedAt, lastActivityAt
+  - agent_config: agentId, fieldsConfig, persona, appearanceSettings, contextKnowledge
+  - agent_sessions: sessionId, agentId, startedAt, endedAt, leadData
+- Data Safety
+  - All API responses should be validated; return [] if data missing
+  - Use nullish coalescing for optional arrays
+  - Ensure user authorization checks on owner/org
+  - Error handling with structured messages
+
+Integration
+- Connect Agent List to Agent Builder (no-code editor):
+  - On Edit: navigate to Agent Builder with agentId
+  - On Create: open Agent Builder with an empty configuration
+  - On Duplicate: call duplication endpoint, refresh list
+  - On Publish/Archive: trigger corresponding endpoints and refresh
+- Connection to Dashboard:
+  - Provide quick actions to navigate to analytics (view analytics) and show quick metrics (agents count, sessions)
+- Dataflow
+  - List fetch -> render -> user actions (edit/duplicate/publish/archive) -> subsequent fetch for freshness
+  - Bulk actions perform server calls -> on success refresh current page with updated data
+
+User Experience Flow
+- User lands on Agent List Page
+  - Page renders header with Create Agent button and a filter/search bar
+  - Agents are displayed as cards in a responsive grid
+  - Each card shows avatar, name, status badge, session count, last activity, and per-agent actions
+  - User can select multiple agents via checkboxes and apply bulk actions
+  - User uses search or status filter to narrow the list; sort by Last Activity or Sessions
+  - If no agents exist, an EmptyState invites to create the first agent
+- User actions
+  - Create Agent: opens Agent Builder interface to define a new agent
+  - Edit: opens existing agent in Agent Builder with preloaded config
+  - Duplicate: creates a copy of the agent with a new name suffix and navigates to edit
+  - Publish/Archive: toggles state with confirmation if archiving
+  - Bulk actions: select multiple agents and perform publish/archive/export
+- Data consistency
+  - All data fetches handle nulls safely; UI renders gracefully with loading states
+  - After any mutation, the page refreshes the list to reflect changes
+- Accessibility and responsiveness
+  - All interactions accessible via keyboard
+  - Layout adapts to mobile/tablet with proper spacing and touch targets
 
 Technical Specifications
 
-1) Data Models (Frontend-facing shapes)
-- FeatureCard
+Data Models
+- Agent
   - id: string
-  - title: string
-  - description: string
-  - iconName: string
-  - cta?: { label: string; href: string } // optional per-card CTA
-- Testimonial
-  - id: string
-  - author: string
-  - company?: string
-  - quote: string
-  - logoUrl?: string
-- PricingTier (for teaser)
-  - id: string
+  - ownerId: string
+  - orgId: string
   - name: string
-  - price: string
-  - features: string[]
-  - ctaLabel?: string
-  - highlight?: boolean
-- NavLink
-  - label: string
-  - href: string
-  - active?: boolean
+  - avatarUrl?: string
+  - status: "draft" | "published"
+  - sessionCount: number
+  - lastActivityAt?: string (ISO date)
+  - createdAt: string
+  - updatedAt: string
+- AgentConfig
+  - agentId: string
+  - fields: Array<FieldConfig> // includes order, validations, types
+  - persona: PersonaConfig // tone, instructions
+  - appearance: AppearanceConfig // colors, avatar, theme
+  - contextKnowledge: Knowledge[] // FAQs, product info
+- Knowledge
+  - type: "faq" | "document" | "notice"
+  - question: string
+  - answer: string
 
-2) API Endpoints (Frontend-only stubs/mocks)
-- GET /api/landing/features
-  - Returns: { data: FeatureCard[] } or { data: [] }
-- GET /api/landing/testimonials
-  - Returns: { data: Testimonial[] } or { data: [] }
-- GET /api/landing/pricing
-  - Returns: { data: PricingTier[] } or { data: [] }
-- GET /api/landing/demo-url
-  - Returns: { data: { url: string } } or { data: { url: "" } }
+API Endpoints
+- GET /api/agents?ownerId=&orgId=&status=&search=&sort=&page=&pageSize=
+- POST /api/agents
+- GET /api/agents/{id}
+- PUT /api/agents/{id}
+- POST /api/agents/{id}/duplicate
+- POST /api/agents/{id}/publish
+- POST /api/agents/{id}/archive
+- POST /api/agents/bulk
 
-3) Frontend Components (Detailed)
-- LandingLayout
-  - Props: navLinks: NavLink[]
-  - Renders Topbar, content slots, Footer
-- Topbar
-  - Props: logo, navLinks, cta
-  - Behavior: responsive collapse on small screens; active link indication
-- HeroSection
-  - Props: title, subtitle, primaryCta, secondaryCta, demoLink
-  - Interactions: clicking Try Demo navigates to /demo page; Sign Up navigates to /signup
-- FeatureCard
-  - Props: feature: FeatureCard
-  - Layout: icon + title + description + optional CTA
-- PricingTeaser
-  - Props: tiers: PricingTier[]
-  - Interactions: CTA to Pricing page
-- TestimonialStrip
-  - Props: testimonials: Testimonial[]
-- DemoAgentLauncher
-  - Props: demoUrl: string
-  - Behavior: opens public agent in full-page view or external tab
-- Footer
-  - Props: none, uses static links
-- LoginSignupModal or Page (for combined auth)
-  - Placeholder route/page that will be wired to [page] Login / Signup Page
-  - Should accommodate email/password login, SSO options, and signup form in a single flow
-  - Validation: email format, password strength basics, required fields
-  - Use dedicated components: AuthForm, SocialLoginButtons, PasswordStrengthMeter (mocked behavior)
+Security
+- Authentication: JWT or session-based auth as per existing system
+- Authorization: Ensure user can access agents owned by their user/account or organization
+- Rate limiting on bulk actions
+- CSRF protection for mutating actions if required by framework
 
-4) Integration
-- Data fetching
-  - Use a dedicated data fetch hook (useLandingData) to fetch features, testimonials, pricing, and demo URL.
-  - Guard all results with null checks and defaults:
-    - const features = Array.isArray(data?.features) ? data.features : [];
-    - const testimonials = Array.isArray(data?.testimonials) ? data.testimonials : [];
-    - const pricing = Array.isArray(data?.pricing) ? data.pricing : [];
-    - const demoUrl = data?.demoUrl ?? "";
-- State management
-  - Use React useState/useEffect for local UI state.
-  - Initialize arrays with []: useState<FeatureCard[]>([]) and similar for testimonials and pricing.
-  - Ensure any mapping uses safe guards: (features ?? []).map(...) or Array.isArray(features) ? features.map(...) : []
-- Accessibility
-  - All interactive elements are keyboard accessible.
-  - Use aria-labels for icon buttons; ensure color contrasts meet WCAG.
-- Routing
-  - Public landing page at "/"
-  - Demo link navigates to external or internal public demo route (e.g., "/demo")
-  - Sign Up and Login route placeholders ("/signup", "/login")
+Validation
+- Frontend: validate required fields (name, status), ensure arrays are non-null before map
+- Backend: validate payload shapes, required fields, and ownership
+- All API responses that contain arrays use data ?? [] or validated via Array.isArray checks
 
-5) User Experience Flow
-- Visitor lands on Homepage
-  - Sees hero with Try Demo and Sign Up CTAs
-  - Can click “Try Demo” to open a public demo agent experience
-  - Scrolls to Feature Cards to understand capabilities
-  - Views Pricing Teaser and clicks to Pricing or Sign Up
-  - Reads testimonials and footer links
-- Visitor clicks Sign Up
-  - Redirect to /signup or opens inline modal (as per app routing)
-  - Completes signup form (email/password, optional SSO)
-- Visitor clicks Try Demo
-  - Opens the public demo agent (new tab or full-page view) using the provided demo URL
-- All data loaded safely with guards; if fetch fails, render graceful placeholders
-- All array data guarded to prevent runtime errors if data is null or undefined
+Acceptance Criteria
+- The Agent List Page renders with a responsive grid or table, showing at least 6 sample agents in a seeded test
+- All array operations guard against null/undefined (e.g., (agents ?? []).map(...))
+- Search, filter, and sort work correctly and reflect in API query
+- Per-agent actions (Edit, Duplicate, Publish/Archive) perform correctly and refresh the list
+- Bulk actions (Publish, Archive, Export) operate on selected agents and return success state
+- Create Agent CTA opens Agent Builder and saves new agent with correct meta
+- No runtime crashes with null data; proper loading and empty states shown when data is absent
+- Data from API is validated: const list = Array.isArray(response?.data) ? response.data : []
 
-6) Security & Validation
-- Client-side validations:
-  - Email format validation on signup/login
-  - Password length (min 8 chars) and basic strength indicator
-- No sensitive data in frontend; token handling to be integrated with actual auth later
-- Ensure no API secrets are embedded in frontend code
-- All inputs must show inline validation messages in color #EF4444
+UI/UX Guidelines
+- Align with Visual Style section: color palette, typography, spacing, and component behavior
+- Card Design: white cards, soft borders, medium radii, subtle shadows
+- Navigation and layout: topbar with CTA, left app nav, consistent whitespace and alignment
+- Micro-interactions: gentle hover lifts, focus rings, transitions 120–180ms
+- Accessibility: aria-labels, keyboard focus order, screen reader-friendly labels
 
-7) Validation & Acceptance Criteria
-- Frontend renders hero, features, pricing teaser, testimonials, and demo link correctly on initial load
-- All data arrays are safely guarded:
-  - Features, testimonials, and pricing arrays default to [] if fetch returns null or non-array
-- No runtime errors on map/filter/reduce when data is missing
-- useState hooks initialized with correct array types
-- Buttons and links satisfy accessibility guidelines (keyboard focus, ARIA labels)
-- The responsive layout behaves correctly on desktop, tablet, and mobile
-- The demo link launches a public agent experience with the provided URL
-- The combined Auth page placeholder supports:
-  - Email/password login
-  - Simple signup flow
-  - SSO option placeholders
-  - Client-side validation and user feedback
+Visual Style
+- Implement the exact color palette, typography, and design tokens described
+- Ensure consistent usage of primary, secondary, and emphasis colors
+- Use responsive design with a 12-column grid system as described
 
-8) UI/UX Guidelines (Design System)
-Follow the provided Design System to ensure consistent look and feel:
-- Color Palette (as provided)
-- Typography (Inter + system fallbacks)
-- Card, Button, Input, and Chip styles
-- Hover and focus states
-- Spacing, grid, and alignment rules
-- Design principles: clean, minimal, professional, modular, trustworthy
+Mandatory Coding Standards — Runtime Safety (CRITICAL)
+- Supabase/API results guard rails:
+  - const items = data ?? []
+  - Always use (items ?? []).map(...) or Array.isArray(items) ? items.map(...) : []
+  - API response shapes validated: const list = Array.isArray(response?.data) ? response.data : []
+- useState defaults:
+  - const [agents, setAgents] = useState<Agent[]>([])
+  - const [selectedIds, setSelectedIds] = useState<string[]>([])
+  - Use typed generics for all arrays/objects
+- Optional chaining and defaults:
+  - Access nested data safely: agent?.lastActivityAt, agent?.sessionCount ?? 0
+  - Destructure with defaults: const { items = [], total = 0 } = response ?? {}
+- Destructuring with defaults and defensive checks applied across all code
 
-9) Visual Style Details (Repeat Brief Recap)
-- Card design: white background, 10–12px radius, subtle borders, soft shadows
-- Topbar: left logo, muted center links, right Login + CTA pill
-- Interactions: subtle lift on hover, micro-animations, quick transitions
-- Data viz: minimal, blue accent (#2563EB), neutral grays for axes
-- Typography: H1 48–56px, H2 20–28px, body 16px, labels 12–14px
-- Layout: container ~1100–1200px max width, 12-column grid, generous white space
+Project Context Notes
+- TARGET PAGE: Agent List Page
+- Connected Pages: Agent Builder / Editor, Dashboard
+- Connected Features: Agent Builder (CRUD)
+- Data flow: All data fetches guarded against null/undefined; state initialized to safe defaults
+- No external API integrations beyond internal app APIs in this version
 
-10) Deliverables for AI Development Tool
-- A fully-structured prompt that can be consumed by an AI code generator to produce:
-  - React (or chosen frontend framework) components:
-    - LandingLayout, Topbar, HeroSection, FeatureCard, PricingTeaser, TestimonialStrip, DemoAgentLauncher, Footer
-    - Data hooks: useLandingData with safe guards
-    - Placeholder LoginSignupPage or AuthModal implementing email/password login and signup with basic SSO button placeholders
-  - Styles (CSS-in-JS or CSS Modules) that implement the exact color tokens, typography, spacing, and hover/focus states described
-  - Mock API handlers for /api/landing/* endpoints that return deterministic sample data matching the shapes above (ensuring data is optional to simulate null cases)
-  - TypeScript interfaces or PropTypes describing the data models
-  - Accessibility checks (ARIA attributes, keyboard navigation)
-  - Runtime safety code per the mandatory guidelines (null/undefined guards, Array.isArray checks, etc.)
-  - Routing stubs for "/" (landing), "/signup", "/login", "/demo"
+Deliverables
+- A working, well-documented codebase for the Agent List Page, including:
+  - Frontend components with clear prop typing and comments
+  - API service layer with endpoints described
+  - State management and data-fetch logic with proper safety guards
+  - Mock/seeding data for local development and clear instructions for integration with real backend
+  - Accessibility and performance considerations
+- Clear developer notes on how to extend features (e.g., adding a table view, more analytics, or deeper bulk operations)
 
-Implementation Notes
-- Ensure all data access is guarded:
-  - Example: const features = Array.isArray(data?.features) ? data.features : [];
-  - Example: const demoUrl = data?.demoUrl ?? "";
-- Ensure default export structure aligns with the chosen framework conventions (e.g., React components as default exports, named exports where appropriate).
-- The logo asset must be referenced via a placeholder path (e.g., /assets/logo.png) with guidance for replacing with the real asset.
-- If producing code for SSR or Next.js, ensure dynamic imports are used for data fetching if needed, with proper fallback UI.
+End of Prompt
 
-Acceptance Criteria Checklist (testable)
-- [ ] Landing page renders hero, feature cards, pricing teaser, testimonials, demo link, and footer without runtime errors.
-- [ ] All array data (features, testimonials, pricing) default to [] when data is null/undefined, with safe mapping using (items ?? []) or Array.isArray checks.
-- [ ] useState hooks for all arrays initialized to [] with correct TypeScript generics.
-- [ ] All API response shapes are validated: const list = Array.isArray(response?.data) ? response.data : [].
-- [ ] Interactive elements (buttons/links) are accessible (keyboard focusable, ARIA labels present).
-- [ ] Try Demo link opens a valid public demo URL in same tab or new tab as per design; the URL is derived from a mock API or hard-coded placeholder in the test harness.
-- [ ] Login / Signup page scaffold exists with:
-  - Email/password fields
-  - Basic client-side validation
-  - Placeholder SSO button group
-  - Submission triggers mock authentication flow
-- [ ] Visual fidelity matches the provided color palette, typography scales, spacing, and card behavior (hover lift, subtle shadows).
-- [ ] Responsive behavior tested at least for 320px, 768px, and 1024px widths; elements reflow gracefully.
+Notes for the AI tooling
+- Prioritize runtime safety by implementing thorough guards for all array operations
+- Maintain strict adherence to the design system and visual style
+- Provide code with TypeScript typings where possible, and include JSDoc-style comments for clarity
+- Include example shapes for Agent and AgentConfig interfaces
+- Where applicable, provide small unit-test-like stubs or guidance for tests focusing on the runtime safety rules (e.g., tests that ensure (data ?? []) and Array.isArray checks pass)
 
-Notes for Implementation Team
-- Do not hard-code sensitive data; use mock data for dev/tests and clearly mark placeholders.
-- Keep components modular and reusable so the same FeatureCard, Testimonial, and Pricing components can be reused in other pages (e.g., a dedicated marketing page or an admin dashboard).
-- Document any assumptions or deviations from the design system in a brief PR description to ensure consistency across teams.
-
-This prompt provides the complete, detailed blueprint for building a robust Landing Page with a compatible Login/Signup pathway, following strict runtime safety rules, and aligning with the project’s design language and architecture.
+Would you like this prompt exported as a ready-to-submit JSON payload for your internal AI development tool, or as a Markdown document for your design/dev team repository?
 
 ## Implementation Notes
 

@@ -1,4 +1,7 @@
 export { AuthenticationLayout } from './AuthenticationLayout'
 export { PasswordField } from './PasswordField'
 export { PasswordStrengthMeter } from './PasswordStrengthMeter'
+export { PasswordPolicyHint } from './PasswordPolicyHint'
+export { PasswordResetRequestForm } from './PasswordResetRequestForm'
+export { PasswordResetTokenForm } from './PasswordResetTokenForm'
 export { SocialLoginButtons, OAuthButtons } from './SocialLoginButtons'

@@ -54,7 +54,7 @@ export const authApi = {
   },
 
   resetPasswordConfirm: async (token: string, newPassword: string): Promise<PasswordResetConfirmResponse> => {
-    const raw = await api.post<PasswordResetConfirmResponse>('/auth/password-reset/reset', {
+    const raw = await api.post<PasswordResetConfirmResponse>('/auth/password-reset/confirm', {
       token,
       newPassword,
     })

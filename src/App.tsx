@@ -1,10 +1,9 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import Landing from '@/pages/Landing'
 import Login from '@/pages/Login'
-import PasswordReset from '@/pages/PasswordReset'
-import PasswordResetSet from '@/pages/PasswordResetSet'
+import AuthPasswordReset from '@/pages/AuthPasswordReset'
 import EmailVerify from '@/pages/EmailVerify'
 import Dashboard from '@/pages/Dashboard'
 import AgentList from '@/pages/AgentList'
@@ -36,6 +35,13 @@ import Help from '@/pages/Help'
 import NotFound from '@/pages/NotFound'
 import ServerError from '@/pages/ServerError'
 
+/** Redirects /password-reset/set?token=... to /auth/password-reset?token=... */
+function RedirectPasswordResetSet() {
+  const location = useLocation()
+  const search = location.search?.length ? location.search : ''
+  return <Navigate to={`/auth/password-reset${search}`} replace /> 
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -55,8 +61,9 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Login />} />
-          <Route path="/password-reset" element={<PasswordReset />} />
-          <Route path="/password-reset/set" element={<PasswordResetSet />} />
+          <Route path="/auth/password-reset" element={<AuthPasswordReset />} />
+          <Route path="/password-reset" element={<Navigate to="/auth/password-reset" replace />} />
+          <Route path="/password-reset/set" element={<RedirectPasswordResetSet />} />
           <Route path="/verify-email" element={<EmailVerify />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/agents" element={<AgentList />} />
