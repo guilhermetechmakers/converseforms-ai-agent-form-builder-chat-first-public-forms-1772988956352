@@ -81,7 +81,7 @@ export default function Help() {
             </section>
 
             {/* Contact form - full width */}
-            <section className="lg:col-span-12">
+            <section id="contact" className="lg:col-span-12 scroll-mt-24">
               <ContactSupportForm />
             </section>
           </div>
