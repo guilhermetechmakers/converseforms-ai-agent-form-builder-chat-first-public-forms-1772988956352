@@ -4,8 +4,9 @@ async function apiRequest<T>(
 ): Promise<T> {
   const base = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
   const url = `${base}${endpoint}`
+  const isFormData = options.body instanceof FormData
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(options.headers as Record<string, string>),
   }
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
@@ -27,7 +28,10 @@ async function apiRequest<T>(
 export const api = {
   get: <T>(endpoint: string) => apiRequest<T>(endpoint),
   post: <T>(endpoint: string, data: unknown) =>
-    apiRequest<T>(endpoint, { method: 'POST', body: JSON.stringify(data) }),
+    apiRequest<T>(endpoint, {
+      method: 'POST',
+      body: data instanceof FormData ? data : JSON.stringify(data),
+    }),
   put: <T>(endpoint: string, data: unknown) =>
     apiRequest<T>(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
   patch: <T>(endpoint: string, data: unknown) =>

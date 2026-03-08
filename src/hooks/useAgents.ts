@@ -64,6 +64,15 @@ export function useAgent(id: string | undefined) {
   })
 }
 
+/** Fetch agent by public slug for the public chat page. */
+export function useAgentBySlug(slug: string | undefined) {
+  return useQuery({
+    queryKey: [...agentKeys.details(), 'slug', slug ?? ''] as const,
+    queryFn: () => agentsApi.getBySlug(slug!),
+    enabled: !!slug,
+  })
+}
+
 export function useCreateAgent() {
   const queryClient = useQueryClient()
   return useMutation({
