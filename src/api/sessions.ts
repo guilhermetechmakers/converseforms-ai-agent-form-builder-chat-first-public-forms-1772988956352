@@ -51,6 +51,10 @@ export const sessionsApi = {
   resendWebhook: (id: string) =>
     api.post<{ success: boolean }>(`/sessions/${id}/resend-webhook`, {}),
 
+  /** Mark session as reviewed (or clear reviewed state) */
+  markReviewed: (id: string, reviewed: boolean) =>
+    api.post<SessionDetail>(`/sessions/${id}/mark-reviewed`, { reviewed }),
+
   purge: (id: string) =>
     api.post<{ success: boolean }>(`/sessions/${id}/purge`, {}),
 
