@@ -326,304 +326,278 @@ All dashboard pages should be nested inside the dashboard layout, not separate r
 
 ## User Design Requirements
 
-# Agent List Page Prompt for AI Development Tool
+# Analytics & Reporting
 
-You are building the Agent List Page for a no-code AI Agent Form Builder platform. The goal is to deliver a production-ready, scalable frontend and backend blueprint (with integration points) that adheres to strict runtime safety rules and design system guidelines provided. The page must render a list of agents owned by the current user/organization, show status, session counts, last activity, and provide actions (edit, duplicate, publish, archive). It must integrate with the Agent Builder (CRUD) and Dashboard components, support filtering, searching, sorting, bulk actions, and clean transitions. All code and specs must guard against null/undefined values before array methods, initialize arrays in useState with proper types, and follow the runtime safety rules highlighted in the project brief.
+## Overview
+Build a comprehensive analytics and reporting subsystem for ConverseForms that tracks usage metrics, session completion rates, validation failure trends, agent performance, and billing-related metrics. Provide frontend dashboards (Agent Detail / Publish Page, Dashboard, Admin Dashboard) and robust backend APIs to aggregate, store, and expose time-series and operational data. Ensure end-to-end data integrity, security, and a seamless UX that mirrors the project’s design language and runtime safety requirements.
 
-Structure of the prompt
-- Overview
-- Page Description (Full Detail)
-- Components to Build
-- Implementation Requirements
-  - Frontend
-  - Backend
-  - Integration
-- User Experience Flow
-- Technical Specifications
-  - Data Models
-  - API Endpoints
-  - Security
-  - Validation
-- Acceptance Criteria
-- UI/UX Guidelines
-- Visual Style (Color Palette, Typography, Key Design Elements)
-- Mandatory Coding Standards — Runtime Safety
-- Project Context Notes
+## Components to Build
+1) Analytics & Reporting Service
+- Time-series event pipeline (batch or streaming) to capture:
+  - Agent interactions (form field prompts, field validations, user responses)
+  - Session lifecycle events (start, progress, completion, abandonment)
+  - Validation attempts and outcomes (pass/fail, error messages, field-specific)
+  - LLM usage/cost estimation per session
+  - Billing events (credits spent, plan quotas, overages)
+- Data store:
+  - Time-series store (e.g., PostgreSQL + TimescaleDB or ClickHouse, or a managed analytics service) for metrics
+  - Snapshot tables for per-agent aggregates
+  - Logs/Events table with pagination and audit fields
+- Aggregation jobs:
+  - Daily/weekly/monthly rollups
+  - Per-agent breakdowns (engagements, completion rate, average session duration, failed validations)
+  - Top failing validations by agent and by form type
+- APIs for dashboards:
+  - Aggregated metrics (time-series) and per-agent breakdowns
+  - Webhook support for external systems
 
-Now, the complete, actionable prompt
+2) Agent Detail / Publish Page
+- Display a summary of agent configuration:
+  - Form fields, required validations, order, persona/tone, context (FAQs, product info)
+- Publish state:
+  - Draft, Published, Unpublished, Suspended with timestamped status
+- Public URL and embed options:
+  - Public link URL, embedding iframe options, domain whitelisting (if applicable)
+- Usage metrics:
+  - Real-time and historical session counts, completion rate, average time on page
+  - Per-field validation trends and failures
+- Quick actions:
+  - Open public link, Copy URL, Regenerate URL, Revoke access
+- UI requirements:
+  - Card-based layout with metrics panels, per-agent charts (sparklines, small bar charts), and action chips
+  - Proper handling of null/undefined data with guards (see runtime safety rules)
 
-1) Overview
-- Build the Agent List Page as the primary management surface for agents owned by the user/organization.
-- Display agent name, avatar/thumbnail, status (draft, published), session counts, last activity timestamp, and a set of quick actions.
-- Provide filtering, searching, sorting, bulk actions, and an entry point to create/edit agents via the Agent Builder.
-- Ensure data safety: guard against null/undefined values for all array operations, initialize useState with proper types, and sanitize API responses as specified.
+3) Dashboard (Primary Workspace)
+- Summary metrics:
+  - Agents count, Sessions, Leads (performs as form submissions), Billing events
+- Recent sessions:
+  - List of latest sessions with agent name, duration, status, completion flag
+- Quick actions:
+  - Create agent, View analytics
+- System alerts:
+  - Quota warnings, failed webhook deliveries, integration errors
+- Data visualizations:
+  - Time-series charts for sessions over time, completion rate trend, top validations failing
+  - KPI cards with numbers and growth indicators
+- UI requirements:
+  - Responsive, grid-based layout with left navigation and topbar consistent with design system
 
-2) Page Description (Full Detail)
-What this page is:
-- A responsive Agent List Page that lists agents owned by the current user or organization. Each agent item shows:
-  - Avatar/thumbnail
-  - Agent name
-  - Status badge (draft or published)
-  - Session counts (per agent)
-  - Last activity timestamp
-  - Inline actions: Edit, Duplicate, Publish/Unpublish, Archive
-  - Optional context actions: View analytics, export
-- Goals:
-  - Enable fast discovery, editing, duplication, and publishing of agents
-  - Support creating new agents via a prominent Create Agent CTA that opens the Agent Builder
-  - Allow bulk actions (publish/unpublish, export, archive) for selected agents
-  - Provide filters (status), search by name, and sorting by last activity or session counts
-  - Maintain parity with connected pages: Agent Builder / Editor and Dashboard
-- Connected features:
-  - Agent Builder (CRUD): Create, read, update, delete with full configuration (fields, persona, appearance, context)
-  - Dashboard: Quick metrics summary and recent session insights
-- UI elements and guidance:
-  - Agents List: Card Grid or Table View that adapts to screen size
-  - Filter Bar: Status filter chips, search input, sort dropdown
-  - Bulk Actions Bar: Checkboxes for multi-select and bulk action dropdown/panel
-  - Create Agent CTA: Prominent button aligned with design system
-  - Empty state messaging with guidance to create the first agent
-- API integrations:
-  - Data retrieval for agents per user/org
-  - Actions trigger (edit, duplicate, publish, archive) invoke corresponding backend endpoints
-  - No external APIs beyond internal app APIs (per PROJECT CONTEXT)
+4) Admin Dashboard
+- Administrative console for platform owners:
+  - User management (invite, roles, status), usage quotas, billing oversight
+  - System logs (events, errors, webhook activity) with searchable/filterable tables
+  - Billing dashboards (plan usage, limits, overages, invoicing status)
+- Data visualization and tabular reports for admin operations
+- Access controls and audit trails
 
-3) Components to Build
-- AgentListPage
-  - Props: userId, organizationId, initialFilters (optional)
-  - State: agents[], searchQuery, statusFilter, sortKey, selectedIds[]
-  - Sub-components:
-    - AgentCard (or AgentListRow for table view)
-      - Props: agent object, onEdit, onDuplicate, onPublishToggle, onArchive
-    - FilterBar
-      - Props: searchQuery, statusFilter, onSearchChange, onStatusChange, onSortChange
-    - BulkActionsBar
-      - Props: selectedIds[], onPublishBulk, onArchiveBulk, onExportBulk, onClearSelection
-    - CreateAgentCTA
-      - Opens Agent Builder (modal or dedicated page)
-- AgentCard / AgentListRow
-  - UI: avatar, name, status badge, sessionCount, lastActivity, small action icons or dropdown
-  - Safety: ensure all arrays accessed are guarded: (agent?.sessions ?? 0), etc.
-- StatusBadge
-  - Simple pill with color coding for draft (neutral) vs published (green/blue)
-- EmptyState
-  - Guidance card with CTA to create an agent
-- AgentBuilderLauncher
-  - Trigger API to open Agent Builder (modal or route)
-- AnalyticsPreview (optional)
-  - Lightweight micro-visuals for last few sessions (sparklines)
+## Implementation Requirements
 
-4) Implementation Requirements
+### Frontend
+- Pages:
+  - Agent Detail / Publish Page (page_006)
+  - Dashboard (page_009)
+  - Admin Dashboard (page_017)
+- Components:
+  - Card, KPI tile, Sparkline, Bar chart, Line chart, Table, Tabs, Select, Date Range Picker, Toggle, Button, IconButton, Chip
+- Interactions:
+  - Real-time-ish updates via polling or small WebSocket stream for metrics
+  - Tooltips with data explanations
+  - Hover states, focus states, and accessible ARIA attributes
+- Data safety:
+  - All array operations guarded: use (items ?? []) or Array.isArray checks
+  - Use data ?? [] for any Supabase-like results
+  - Initialize React state with proper defaults: useState<T[]>([]) for arrays
+  - Validate API responses before mapping or indexing
+- State management:
+  - Local React state for UI; consider lightweight state (useState, useEffect) and context if needed
+  - Caching of frequently accessed metrics with invalidation on data refresh
+- Security/UI data privacy:
+  - Ensure sensitive data is masked in UI (PII minimization)
+  - Role-based visibility for admin vs. agent analytics
 
-Frontend
-- UI Components and Pages
-  - Use the design system from the Visual Style section exactly (colors, typography, spacing, etc.)
-  - Agent List rendered as a responsive grid of cards or a compact table depending on viewport
-  - Implement a top filter bar with:
-    - Search input (name-based)
-    - Status filter chips: Draft, Published, All
-    - Sort dropdown: Last Activity, Session Count, Name
-  - Bulk selection: checkboxes to select multiple agents
-  - Bulk actions: Publish, Archive, Export
-  - Per-agent actions: Edit, Duplicate, Publish/Unpublish toggle, Archive
-  - Create Agent button: prominent CTA to open Agent Builder
-  - Empty state messaging and a path to create the first agent
-- Data Handling
-  - Fetch agents via API (GET /api/agents?ownerId=...&orgId=...&status=...&search=...&sort=...)
-  - Use data ?? [] for result arrays
-  - Guard all array ops: (agents ?? []).map(...) and Array.isArray(agents) ? agents.map(...) : []
-  - Normalize API response: const items = Array.isArray(response?.data) ? response.data : []
-  - Each agent object should include: id, name, avatarUrl, status, sessionCount, lastActivityAt, canEdit, etc.
-- State Management
-  - useState<Agent[]>([]) for agents
-  - useState<string>("") for search
-  - useState<string>("all") for status
-  - useState<string>("lastActivity") for sort
-  - useState<string[]>([]) for selectedIds
-- Interactions
-  - Debounced search input to avoid excessive API calls
-  - Confirm dialogs for destructive actions (archive)
-  - Optimistic UI updates for actions with error fallback
-- Accessibility
-  - All interactive elements must have ARIA labels and keyboard navigability
-  - Focus management on modal open
-- Performance
-  - Pagination or infinite scroll for large agent sets? Implement at least paginated fetch (page size 20) with next/prev
-  - Client-side filtering should rely on server when possible; fallback to client-side when needed
+### Backend
+- APIs:
+  - GET /api/analytics/metrics?start=&end=&agentId= (time-series metrics)
+  - GET /api/analytics/agents/:agentId/summary (per-agent aggregates)
+  - GET /api/analytics/validations/top-failures (top failing validations)
+  - POST /api/events/ingest (event pipeline ingestion)
+  - GET /api/billing/usage (billing-related metrics)
+  - Admin-only endpoints for users, quotas, system logs, and billing
+- Data models:
+  - Events: id, agentId, sessionId, eventType, timestamp, payload
+  - Sessions: id, agentId, startedAt, endedAt, status, duration, completed
+  - Validations: id, agentId, fieldName, result, errorCode, message, timestamp
+  - Costs: id, sessionId, agentId, costEstimate, timestamp
+  - Billing: id, userId, plan, quota, usage, overage, periodStart, periodEnd
+- Data storage:
+  - Time-series optimized schema for metrics
+  - Normalized tables for sessions, events, validations
+- Validation:
+  - Always validate inputs; default to safe structures if missing
+  - Use nullish coalescing for optional fields
+- Security:
+  - JWT/OAuth scopes; admin vs. agent access
+  - Rate limiting on analytics endpoints
+  - Sensitive data masking in logs and responses
 
-Backend
-- API Endpoints (examples; align with your actual framework)
-  - GET /api/agents
-    - Query params: ownerId, orgId, status, search, sort, page, pageSize
-    - Returns: { data: Agent[], total: number }
-  - POST /api/agents
-    - Body: agent configuration (fields, persona, appearance, context)
-    - Returns: created Agent
-  - GET /api/agents/{id}
-    - Returns: Agent details
-  - PUT /api/agents/{id}
-    - Body: updated agent configuration
-    - Returns: updated Agent
-  - POST /api/agents/{id}/duplicate
-    - Returns: duplicated Agent
-  - POST /api/agents/{id}/publish
-    - Toggles publish state
-  - POST /api/agents/{id}/archive
-    - Archives the agent
-  - POST /api/agents/bulk
-    - Body: { action: "publish"|"archive"|"export", ids: string[] }
-    - Returns: status/result
-- Database Tables (conceptual)
-  - agents: id, ownerId, orgId, name, avatarUrl, status (draft|published), createdAt, updatedAt, lastActivityAt
-  - agent_config: agentId, fieldsConfig, persona, appearanceSettings, contextKnowledge
-  - agent_sessions: sessionId, agentId, startedAt, endedAt, leadData
-- Data Safety
-  - All API responses should be validated; return [] if data missing
-  - Use nullish coalescing for optional arrays
-  - Ensure user authorization checks on owner/org
-  - Error handling with structured messages
+### Integration
+- Event pipeline integration:
+  - Ingest events from agents (start, field prompts, validations, completions)
+  - Compute rollups periodically (daily/weekly)
+  - Propagate summarized metrics to dashboards
+- Frontend-Backend connection:
+  - REST API endpoints with predictable schemas
+  - Optional GraphQL layer if preferred for flexibility (but REST is acceptable)
+- Data consistency:
+  - Implement idempotent ingestion for events
+  - Guard against partial writes; use transactional boundaries where possible
+- Embedding and public access:
+  - Ensure embed URLs are trackable and configurable per-agent
+  - Provide measures for revoking access and regenerating URLs
 
-Integration
-- Connect Agent List to Agent Builder (no-code editor):
-  - On Edit: navigate to Agent Builder with agentId
-  - On Create: open Agent Builder with an empty configuration
-  - On Duplicate: call duplication endpoint, refresh list
-  - On Publish/Archive: trigger corresponding endpoints and refresh
-- Connection to Dashboard:
-  - Provide quick actions to navigate to analytics (view analytics) and show quick metrics (agents count, sessions)
-- Dataflow
-  - List fetch -> render -> user actions (edit/duplicate/publish/archive) -> subsequent fetch for freshness
-  - Bulk actions perform server calls -> on success refresh current page with updated data
+## User Experience Flow
+1) Agent creation and publishing:
+   - User creates an agent/form, configures fields, validations, and persona
+   - User publishes the agent; a public URL is generated
+   - Dashboard shows agent appears in the Agents list with status “Published”
+2) Visitor interaction via public URL:
+   - Visitor lands on public URL and initiates chat
+   - System guides through required fields with validations
+   - Session data is stored with timestamped events and final completion status
+3) Analytics viewing:
+   - Admins/owners access Dashboard to view:
+     - Sessions over time, completion rate, top failing validations
+     - Per-agent performance metrics
+     - LLM cost estimates and billing usage
+   - Agent Detail page shows live metrics for that agent and quick actions (copy URL, revoke access)
+4) Admin operations:
+   - Admins manage users, quotas, and billing; monitor system logs and webhook health
+   - Alerts trigger for quota or system issues
+5) Data governance:
+   - Users can export data or view aggregated reports; sensitive fields masked
+   - Audit logs capture admin actions for compliance
 
-User Experience Flow
-- User lands on Agent List Page
-  - Page renders header with Create Agent button and a filter/search bar
-  - Agents are displayed as cards in a responsive grid
-  - Each card shows avatar, name, status badge, session count, last activity, and per-agent actions
-  - User can select multiple agents via checkboxes and apply bulk actions
-  - User uses search or status filter to narrow the list; sort by Last Activity or Sessions
-  - If no agents exist, an EmptyState invites to create the first agent
-- User actions
-  - Create Agent: opens Agent Builder interface to define a new agent
-  - Edit: opens existing agent in Agent Builder with preloaded config
-  - Duplicate: creates a copy of the agent with a new name suffix and navigates to edit
-  - Publish/Archive: toggles state with confirmation if archiving
-  - Bulk actions: select multiple agents and perform publish/archive/export
-- Data consistency
-  - All data fetches handle nulls safely; UI renders gracefully with loading states
-  - After any mutation, the page refreshes the list to reflect changes
-- Accessibility and responsiveness
-  - All interactions accessible via keyboard
-  - Layout adapts to mobile/tablet with proper spacing and touch targets
-
-Technical Specifications
+## Technical Specifications
 
 Data Models
+- Events
+  - id: string
+  - agentId: string
+  - sessionId: string
+  - eventType: string (e.g., "session_start", "field_prompted", "validation_attempt", "validation_pass", "validation_fail", "session_end", "cost_estimate")
+  - timestamp: ISO8601 datetime
+  - payload: JSONB
+- Sessions
+  - id: string
+  - agentId: string
+  - startedAt: timestamp
+  - endedAt: timestamp
+  - status: string ("in_progress", "completed", "abandoned")
+  - durationSeconds: number
+  - leadsCaptured: number
+- Validations
+  - id: string
+  - agentId: string
+  - sessionId: string
+  - fieldName: string
+  - result: string ("pass", "fail")
+  - errorCode: string (optional)
+  - message: string (optional)
+  - timestamp: timestamp
+- Costs
+  - id: string
+  - sessionId: string
+  - agentId: string
+  - costEstimate: number
+  - timestamp: timestamp
+- Billing
+  - id: string
+  - userId: string
+  - plan: string
+  - quota: number
+  - usage: number
+  - overage: number
+  - periodStart: timestamp
+  - periodEnd: timestamp
 - Agent
   - id: string
-  - ownerId: string
-  - orgId: string
   - name: string
-  - avatarUrl?: string
-  - status: "draft" | "published"
-  - sessionCount: number
-  - lastActivityAt?: string (ISO date)
-  - createdAt: string
-  - updatedAt: string
-- AgentConfig
-  - agentId: string
-  - fields: Array<FieldConfig> // includes order, validations, types
-  - persona: PersonaConfig // tone, instructions
-  - appearance: AppearanceConfig // colors, avatar, theme
-  - contextKnowledge: Knowledge[] // FAQs, product info
-- Knowledge
-  - type: "faq" | "document" | "notice"
-  - question: string
-  - answer: string
+  - publishedAt: timestamp
+  - publicUrl: string
+  - embedOptions: object
+  - persona: object
+  - metricsCacheVersion: number (for UI freshness)
 
 API Endpoints
-- GET /api/agents?ownerId=&orgId=&status=&search=&sort=&page=&pageSize=
-- POST /api/agents
-- GET /api/agents/{id}
-- PUT /api/agents/{id}
-- POST /api/agents/{id}/duplicate
-- POST /api/agents/{id}/publish
-- POST /api/agents/{id}/archive
-- POST /api/agents/bulk
+- GET /api/analytics/metrics
+  - Query: start, end, agentId, interval (hour/day)
+  - Returns: time-series data { timestamp, value, agentId, metricType }
+- GET /api/analytics/agents/:agentId/summary
+  - Returns per-agent aggregates: sessions, completions, avgDuration, completionRate, validationsFailRate
+- GET /api/analytics/validations/top-failures
+  - Returns: topN failures by field, agent, or form
+- POST /api/events/ingest
+  - Body: event payload; supports batch ingestion
+- GET /api/billing/usage
+  - Returns: current usage vs. quota, per-agent or global
+- Admin endpoints
+  - User management, quotas, system logs, billing dashboards (as separate, secured routes)
 
 Security
-- Authentication: JWT or session-based auth as per existing system
-- Authorization: Ensure user can access agents owned by their user/account or organization
-- Rate limiting on bulk actions
-- CSRF protection for mutating actions if required by framework
+- Authentication: OAuth 2.0 / JWT tokens; roles: user, admin, agent
+- Authorization: 
+  - Agents: access public analytics only for their own agents
+  - Admin: access to every tenant’s data
+- Data privacy: mask PII in analytics responses; provide data export with privacy controls
+- Input validation: strict server-side validation of all inputs
+- Rate limiting: protect analytics endpoints from abuse
 
 Validation
-- Frontend: validate required fields (name, status), ensure arrays are non-null before map
-- Backend: validate payload shapes, required fields, and ownership
-- All API responses that contain arrays use data ?? [] or validated via Array.isArray checks
+- Ensure all inputs use nullish coalescing and defaults
+- Validate arrays before mapping; guard (items ?? []).map(...) or Array.isArray(items) ? items.map(...) : []
+- Supabase-like results: data ?? [] in all fetches
+- Initialize all React state for arrays with []: useState<Type[]>([])
 
 Acceptance Criteria
-- The Agent List Page renders with a responsive grid or table, showing at least 6 sample agents in a seeded test
-- All array operations guard against null/undefined (e.g., (agents ?? []).map(...))
-- Search, filter, and sort work correctly and reflect in API query
-- Per-agent actions (Edit, Duplicate, Publish/Archive) perform correctly and refresh the list
-- Bulk actions (Publish, Archive, Export) operate on selected agents and return success state
-- Create Agent CTA opens Agent Builder and saves new agent with correct meta
-- No runtime crashes with null data; proper loading and empty states shown when data is absent
-- Data from API is validated: const list = Array.isArray(response?.data) ? response.data : []
+- [ ] The analytics pipeline ingests events reliably with idempotent ingestion and rollups daily
+- [ ] Dashboards render correct aggregates with per-agent breakdowns and time-series charts
+- [ ] Agent Detail / Publish Page shows publish state, public URL, regenerate/revoke actions, and usage metrics
+- [ ] Admin Dashboard provides user management, quotas, billing oversight, and system logs with proper access control
+- [ ] All frontend data access uses safe guards for null / undefined data and uses data ?? [] for results
+- [ ] API responses validate shapes; fields default to safe values when missing
+- [ ] UI adheres to the design system, with accessible components and keyboard navigable controls
 
 UI/UX Guidelines
-- Align with Visual Style section: color palette, typography, spacing, and component behavior
-- Card Design: white cards, soft borders, medium radii, subtle shadows
-- Navigation and layout: topbar with CTA, left app nav, consistent whitespace and alignment
-- Micro-interactions: gentle hover lifts, focus rings, transitions 120–180ms
-- Accessibility: aria-labels, keyboard focus order, screen reader-friendly labels
+Apply the project's design system as described in the Visual Style section:
+- Use the specified color palette, typography, spacing, and card design
+- Implement responsive layouts with a constrained 1100–1200 px container
+- Use 12-column grid, 24 px baseline rhythm, and appropriate section spacing
+- Implement hover/focus states and micro-interactions per guidelines
+- Ensure data visualization uses blue (#2563EB) and neutral tones (#0F1724, #6B7280, #E6E7EB)
 
 Visual Style
-- Implement the exact color palette, typography, and design tokens described
-- Ensure consistent usage of primary, secondary, and emphasis colors
-- Use responsive design with a 12-column grid system as described
+- Maintain the exact tokens for colors, typography, borders, shadows, and radii as provided
+- Cards: white backgrounds, 10–12 px radius, soft shadow, hover lift
+- Charts: single-color emphasis with subtle area fills
+- Navigation: consistent topbar and left nav with accessible controls
+- Data visualization: sparklines, bars, and lines with legible legends and axes
 
-Mandatory Coding Standards — Runtime Safety (CRITICAL)
-- Supabase/API results guard rails:
-  - const items = data ?? []
-  - Always use (items ?? []).map(...) or Array.isArray(items) ? items.map(...) : []
-  - API response shapes validated: const list = Array.isArray(response?.data) ? response.data : []
-- useState defaults:
-  - const [agents, setAgents] = useState<Agent[]>([])
-  - const [selectedIds, setSelectedIds] = useState<string[]>([])
-  - Use typed generics for all arrays/objects
-- Optional chaining and defaults:
-  - Access nested data safely: agent?.lastActivityAt, agent?.sessionCount ?? 0
-  - Destructure with defaults: const { items = [], total = 0 } = response ?? {}
-- Destructuring with defaults and defensive checks applied across all code
+Mandatory Coding Standards — Runtime Safety
+- Supabase-like results: always guard with data ?? []
+- Array methods guarded: (items ?? []).map(...) or Array.isArray(items) ? items.map(...) : []
+- useState for arrays: useState<Type[]>([])
+- API response shapes: const list = Array.isArray(response?.data) ? response.data : []
+- Optional chaining: use obj?.property?.nested for nested API results
+- Destructuring with defaults: const { items = [], count = 0 } = response ?? {}
 
 Project Context Notes
-- TARGET PAGE: Agent List Page
-- Connected Pages: Agent Builder / Editor, Dashboard
-- Connected Features: Agent Builder (CRUD)
-- Data flow: All data fetches guarded against null/undefined; state initialized to safe defaults
-- No external API integrations beyond internal app APIs in this version
+- Target feature: Analytics & Reporting
+- Focus areas: usage metrics, session completion, validation trends, agent performance, billing metrics
+- Associated pages: page_006 (Agent Detail / Publish), page_009 (Dashboard), page_017 (Admin Dashboard)
+- Stack flexibility: REST APIs with optional GraphQL if preferred
+- Ensure the solution scales with multiple tenants/users and supports webhook deliverables
 
-Deliverables
-- A working, well-documented codebase for the Agent List Page, including:
-  - Frontend components with clear prop typing and comments
-  - API service layer with endpoints described
-  - State management and data-fetch logic with proper safety guards
-  - Mock/seeding data for local development and clear instructions for integration with real backend
-  - Accessibility and performance considerations
-- Clear developer notes on how to extend features (e.g., adding a table view, more analytics, or deeper bulk operations)
-
-End of Prompt
-
-Notes for the AI tooling
-- Prioritize runtime safety by implementing thorough guards for all array operations
-- Maintain strict adherence to the design system and visual style
-- Provide code with TypeScript typings where possible, and include JSDoc-style comments for clarity
-- Include example shapes for Agent and AgentConfig interfaces
-- Where applicable, provide small unit-test-like stubs or guidance for tests focusing on the runtime safety rules (e.g., tests that ensure (data ?? []) and Array.isArray checks pass)
-
-Would you like this prompt exported as a ready-to-submit JSON payload for your internal AI development tool, or as a Markdown document for your design/dev team repository?
+Generate the complete, detailed prompt now that the above requirements are satisfied, including all necessary schemas, endpoints, UI components, data flows, and acceptance criteria.
 
 ## Implementation Notes
 

@@ -61,7 +61,6 @@ export function useSession(id: string | undefined) {
 }
 
 export function useSessionExport(id: string | undefined, format: 'csv' | 'json') {
-  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async () => {
       if (!id) throw new Error('Session id required')
