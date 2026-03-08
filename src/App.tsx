@@ -4,6 +4,7 @@ import { Toaster } from 'sonner'
 import Landing from '@/pages/Landing'
 import Login from '@/pages/Login'
 import PasswordReset from '@/pages/PasswordReset'
+import PasswordResetSet from '@/pages/PasswordResetSet'
 import EmailVerify from '@/pages/EmailVerify'
 import Dashboard from '@/pages/Dashboard'
 import AgentList from '@/pages/AgentList'
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Login />} />
           <Route path="/password-reset" element={<PasswordReset />} />
+          <Route path="/password-reset/set" element={<PasswordResetSet />} />
           <Route path="/verify-email" element={<EmailVerify />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/agents" element={<AgentList />} />

@@ -6,15 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AnimatedPage } from '@/components/AnimatedPage'
+import { AuthenticationLayout } from '@/components/auth'
 import { authApi } from '@/api/auth'
 import { toast } from 'sonner'
 
 const schema = z.object({
-  email: z.string().email('Invalid email'),
+  email: z.string().min(1, 'Email is required').email('Invalid email address'),
 })
 
 type FormData = z.infer<typeof schema>
+
+const INLINE_ERROR_CLASS = 'mt-1 text-sm text-[#EF4444]'
 
 export default function PasswordReset() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -32,40 +34,52 @@ export default function PasswordReset() {
   }
 
   return (
-    <AnimatedPage>
-      <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Reset password</CardTitle>
-            <CardDescription>
-              Enter your email and we'll send you a link to reset your password.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  className="mt-1"
-                  {...register('email')}
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
-                )}
-              </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Sending...' : 'Send reset link'}
-              </Button>
-            </form>
+    <AuthenticationLayout
+      title="Reset password"
+      description="Enter your email and we'll send you a link to reset your password."
+    >
+      <Card className="w-full shadow-card">
+        <CardHeader>
+          <CardTitle className="text-xl">Forgot password?</CardTitle>
+          <CardDescription>
+            We'll send you a link to set a new password. Check your inbox (and spam).
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <Label htmlFor="password-reset-email">Email</Label>
+              <Input
+                id="password-reset-email"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+                className="mt-1"
+                aria-invalid={!!errors.email}
+                {...register('email')}
+              />
+              {errors.email && (
+                <p className={INLINE_ERROR_CLASS} role="alert">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
+            >
+              {isSubmitting ? 'Sending...' : 'Send reset link'}
+            </Button>
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              <Link to="/login" className="text-accent hover:underline">
+                Back to login
+              </Link>
+            </p>
+          </form>
         </CardContent>
-        </Card>
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          <Link to="/login" className="text-accent hover:underline">Back to login</Link>
-        </p>
-      </div>
-    </AnimatedPage>
+      </Card>
+    </AuthenticationLayout>
   )
 }

@@ -10,20 +10,26 @@ export interface PasswordFieldProps extends Omit<React.ComponentPropsWithoutRef<
   error?: string
 }
 
+type PasswordFieldPropsWithRef = PasswordFieldProps & { ref?: React.Ref<HTMLInputElement> }
+
 const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldProps>(
-  ({ id, className, showToggle = true, error, ...props }, ref) => {
+  (props, ref) => {
+    const { id, className, showToggle = true, error, ...rest } = props
+    const restWithRef = rest as PasswordFieldPropsWithRef
+    const { ref: _refProp, id: _id, ...inputProps } = restWithRef
+    const resolvedRef = _refProp ?? ref
     const [visible, setVisible] = React.useState(false)
     return (
       <div className="relative">
         <Input
-          ref={ref}
+          ref={resolvedRef}
           id={id}
           type={visible ? 'text' : 'password'}
-          autoComplete={props.autoComplete ?? 'current-password'}
+          autoComplete={inputProps.autoComplete ?? 'current-password'}
           className={cn(showToggle && 'pr-10', className)}
           aria-invalid={error ? 'true' : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
-          {...props}
+          {...inputProps}
         />
         {showToggle && (
           <Button
