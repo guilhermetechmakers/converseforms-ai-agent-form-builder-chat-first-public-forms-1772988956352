@@ -1,8 +1,5 @@
 /** Validation and sanitization helpers for webhook configuration. */
 
-const URL_REGEX =
-  /^https?:\/\/[a-zA-Z0-9][-a-zA-Z0-9.]*[a-zA-Z0-9](:[0-9]+)?(\/[^\s]*)?$/
-
 const HEADER_KEY_REGEX = /^[a-zA-Z0-9_-]+$/
 const MAX_HEADER_KEY_LENGTH = 256
 const MAX_HEADER_VALUE_LENGTH = 4096

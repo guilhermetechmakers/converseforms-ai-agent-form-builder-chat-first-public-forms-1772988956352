@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -19,7 +19,6 @@ import {
   Send,
   FileText,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 const QUERY_KEY = ['webhooks'] as const
@@ -57,23 +56,11 @@ export function WebhookList({
   onTest,
   onDelete,
 }: WebhookListProps) {
-  const queryClient = useQueryClient()
   const { data, isLoading, error } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const res = await webhooksApi.getAll()
       return Array.isArray(res) ? res : (res as { data?: Webhook[] })?.data ?? []
-    },
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => webhooksApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
-      toast.success('Webhook deleted')
-    },
-    onError: (err: Error) => {
-      toast.error(err?.message ?? 'Failed to delete webhook')
     },
   })
 

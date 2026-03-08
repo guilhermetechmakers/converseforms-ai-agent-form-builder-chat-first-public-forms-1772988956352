@@ -8,10 +8,6 @@ import { Badge } from '@/components/ui/badge'
 import { webhooksApi } from '@/api/webhooks'
 import type { Webhook, DeliveryLog } from '@/types/webhook'
 import { ChevronDown, ChevronRight, FileText } from 'lucide-react'
-import { cn } from '@/lib/utils'
-
-const REDACT_PLACEHOLDER = '[redacted]'
-
 function redactPayload(body: string | null | undefined, maxLength = 2000): string {
   const raw = typeof body === 'string' ? body : ''
   if (raw.length <= maxLength) return raw

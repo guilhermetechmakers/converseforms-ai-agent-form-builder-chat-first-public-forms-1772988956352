@@ -14,7 +14,6 @@ import { Switch } from '@/components/ui/switch'
 import { WEBHOOK_EVENTS, type Webhook, type CreateWebhookInput, type RetryPolicy } from '@/types/webhook'
 import {
   validateWebhookForm,
-  isValidUrl,
   sanitizeHeaders,
   type WebhookFormErrors,
 } from '@/lib/webhook-validation'
@@ -93,7 +92,7 @@ export function WebhookFormModal({
   }
 
   const addHeader = () => {
-    setHeaders((prev) => ({ ...prev, `__new_${Date.now()}`: '' }))
+    setHeaders((prev) => ({ ...prev, ['__new_' + Date.now()]: '' }))
   }
 
   const updateHeaderKey = (oldKey: string, newKey: string) => {
