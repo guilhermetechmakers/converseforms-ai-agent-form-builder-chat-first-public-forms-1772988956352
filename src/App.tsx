@@ -10,6 +10,7 @@ import AgentList from '@/pages/AgentList'
 import AgentBuilder from '@/pages/AgentBuilder'
 import AgentPublish from '@/pages/AgentPublish'
 import PublicChat from '@/pages/PublicChat'
+import Demo from '@/pages/Demo'
 import SessionList from '@/pages/SessionList'
 import SessionViewer from '@/pages/SessionViewer'
 import Templates from '@/pages/Templates'
@@ -75,6 +76,7 @@ export default function App() {
             <Route path="flags" element={<FeatureFlagsAndConfig />} />
             <Route path="analytics" element={<AnalyticsAndReporting />} />
           </Route>
+          <Route path="/demo" element={<Demo />} />
           <Route path="/chat/:slug" element={<PublicChat />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/profile" element={<Profile />} />

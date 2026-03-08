@@ -326,82 +326,250 @@ All dashboard pages should be nested inside the dashboard layout, not separate r
 
 ## User Design Requirements
 
-- Use the provided color palette and typography guidelines.
-- Maintain a clean, minimal, data-first interface with strong visual hierarchy.
-- Ensure responsive behavior: two-column layouts on larger screens, stacked sections on smaller viewports.
-- Use consistent card, button, input, and chart visuals across all sections.
-- Subtle micro-interactions for hover/focus and state transitions without distracting animations.
+# Landing Page Development Prompt
 
----
+Overview
+You are building the public-facing Landing Page for ConverseForms — an AI Agent Form Builder. This page serves as the public marketing gateway describing the product, its features, pricing CTA, and a direct link to a public demo agent. The primary goal is to convert visitors into sign-ups or to let them try a demo public agent immediately. The design system, color palette, typography, and UI tokens described below must be followed precisely. All code must guard against null/undefined values and follow the runtime safety rules listed in the project’s mandatory coding standards.
 
-## Visual Style
+Project Context Summary
+- Product: ConverseForms — AI agent form builder that generates public links to a chat-based form collection experience.
+- Public Landing Page should show hero content, feature overview, pricing teaser, testimonials, and a public demo agent link.
+- Assets: App Logo (primary brand logo used across product, marketing site, favicon, emails).
+- No external APIs are required for this task beyond the visible UI layer; all interactions can be mocked or wired to placeholder endpoints as needed.
 
-Color Palette and UI tokens are as described:
-- Primary background: #FFFFFF
-- Neutral surfaces: #F8FAFC, #F1F5F9
-- Primary text: #0F1724
-- Secondary text: #6B7280
-- Dividers: #E6E7EB
-- Shadow: rgba(15, 23, 36, 0.06)
-- Primary CTA: #111827
-- Badges: #FF6A00
-- Success: #10B981
-- Info: #2563EB
-- Error: #EF4444
-- Gradients/overlay: subtle radial fade for focus
+What this task accomplishes
+- Create a polished, marketing-oriented landing page that clearly communicates product value, captures leads with sign-up CTAs, and enables visitors to launch a demo public agent with a single click.
+- Ensure accessibility, responsive design, and parity with the design system (colors, typography, spacing, cards, navigation, and micro-interactions).
+- Implement frontend guards for null/undefined values when consuming data, and ensure safe rendering for all list/map data.
 
-Typography and layout tokens:
-- Font: Inter, with system fallbacks
-- H1: 48–56px, weight 700, color #0F1724
-- H2: 20–28px, weight 600, color #0F1724
-- Body: 16px, weight 400, color #6B7280
-- Metadata labels: 12–14px, weight 500/400, color #6B7280
-- Container: max-width 1100–1200px, horizontal padding 24–36px
-- Grid: 12-column responsive
-- Spacing: baseline 24px, section gaps 48–64px
-- Cards: 10–12px corner radius; 1px border #E6E7EB or shadow optional
-- Buttons: CTA pill radius 999px; paddings 10–14px
+Page Description (Full Detail)
+What this page is
+- A public marketing Landing Page that introduces ConverseForms, highlights core features (Agent Builder, Public Links, Persona, Integrations), shows a pricing teaser, showcases testimonials/use cases, and provides a direct public demo agent link.
 
-Key design elements:
-- Card structure with optional media area, title, meta, and micro actions
-- Top navigation with left wordmark, center links, right user actions
-- Data visualization with clean lines, subtle fills, accessible legends
+Goals
+- Convert visitors to sign-ups or initiate a free public demo agent experience with one click.
+- Highlight value propositions, provide social proof, and route users to pricing or signup flows.
+- Provide accessible navigation, a prominent hero CTA, and a stable, responsive UI pattern.
 
-Runtime Safety Reminders (CRITICAL):
-- Supabase-like results: use data ?? [] wherever fetching arrays.
-- Guard array methods: (items ?? []).map(...) or Array.isArray(items) ? items.map(...) : [].
-- useState defaults: useState<Type[]>([]) for arrays, useState<MyObject[]>([]) for lists.
-- API responses: const list = Array.isArray(response?.data) ? response.data : [].
-- Optional chaining: use obj?.prop?.nested for nested API data.
-- Destructuring defaults: const { items = [], count = 0 } = response ?? {};
+Connected UI/Pages
+- [asset] App Logo: Primary brand logo to be displayed in header, footer, hero, favicon, and emails.
+- [page] Login / Signup Page: A separate combined authentication entry that enables email/password login, SSO options, and signup flow (to be integrated as a route from header CTAs like Sign Up or Login).
 
----
+UI Elements & Visual Guidance
+- Hero Section
+  - Headline: bold, centered, high-contrast copy describing the product’s promise.
+  - Subtext: concise supporting paragraph.
+  - CTAs: Primary CTA “Try Demo” and secondary CTA “Sign Up” (aligned horizontally on desktop, stacked on small screens).
+  - Public Live Demo Link: a clearly labeled link or button that opens a public chat demo in a full-page view.
+  - Visual focal area: center card overlay above a subtle background (map-like wash or soft gradient) with a radial fade focusing attention to center content.
+- Features Overview (3–5 feature cards)
+  - Cards describe Agent Builder, Public Links, Persona, and Integrations.
+  - Each card includes: icon, title, 1–2 sentence description, and a micro CTA or tag.
+- Pricing Teaser
+  - Snapshot of tiers (e.g., Free, Pro, Enterprise) with quick highlights and CTA to Pricing page or signup.
+- Testimonials / Use Cases
+  - 2–3 quotes with logos, short descriptions, and author attribution.
+- Footer
+  - Quick links: About, Help, Privacy, Terms, Contact, Social icons.
+- Navigation
+  - Topbar: Left-aligned compact wordmark/logo; center muted navigation links; right-aligned Login link plus primary CTA (Join / Create Agent) styled as a solid pill.
+- Visual Elements
+  - Card design: white background, 10–12px radius, subtle border or shadow, with hover lift and scale effects.
+  - Data visualization: minimal, blue/neutral accents; sparklines or small charts in cards if used.
+  - Map/pin visuals: optional soft map wash behind hero content to reinforce context without distraction.
 
-### Ready-to-Use Developer Prompts
+Mandatory Coding Standards — Runtime Safety
+CRITICAL: All generated code MUST guard against null/undefined values before using array methods, and follow the runtime safety rules described:
+1. Supabase-like data: Use data ?? [] when querying data; ensure items are arrays before mapping.
+2. Array methods: Guard with (items ?? []) or Array.isArray(items) ? items.map(...) : [] for all .map, .filter, .reduce, etc.
+3. useState defaults: For arrays, initialize with useState<Type[]>([]) to avoid undefined arrays.
+4. API responses: Validate response shapes: const list = Array.isArray(response?.data) ? response.data : [].
+5. Optional chaining: Use obj?.property?.nested for safe access.
+6. Destructuring with defaults: const { items = [], count = 0 } = response ?? {}.
 
-- Prompt 1: "Create a modular Admin Dashboard in React TypeScript with RBAC, Quotas, Billing, and Logs sections, using the design system above. Implement safe data handling patterns, 4 main data tables, charts, and per-org feature flags. Ensure all array handling guards against null/undefined and initialize states with typed empty arrays. Expose API contracts and mock data shapes for testing."
+Technical Specifications
 
-- Prompt 2: "Build a fully-tested Admin RBAC UI with:
-  - Users table: fetch, display, per-row actions, bulk actions
-  - Quotas: org defaults and per-org overrides
-  - Billing: invoices, trends, and actions
-  - Logs: filterable event feed
-  - Flags: global and org overrides
-  - Analytics: metrics dashboard
-  - Proper frontend data validation, defensive coding patterns, and runtime safety guards as described in the requirements."
+1) Data Models (Frontend-facing shapes)
+- FeatureCard
+  - id: string
+  - title: string
+  - description: string
+  - iconName: string
+  - cta?: { label: string; href: string } // optional per-card CTA
+- Testimonial
+  - id: string
+  - author: string
+  - company?: string
+  - quote: string
+  - logoUrl?: string
+- PricingTier (for teaser)
+  - id: string
+  - name: string
+  - price: string
+  - features: string[]
+  - ctaLabel?: string
+  - highlight?: boolean
+- NavLink
+  - label: string
+  - href: string
+  - active?: boolean
 
-- Prompt 3: "Implement the Admin Dashboard using a 12-column responsive grid, a left navigation rail, and a top bar. Create reusable components (Card, DataTable, Sparkline, Chart) and an RBAC gate to hide restricted actions. Ensure all data access uses Array.isArray checks and data ?? [] patterns. Provide TypeScript interfaces and API contracts for each resource."
+2) API Endpoints (Frontend-only stubs/mocks)
+- GET /api/landing/features
+  - Returns: { data: FeatureCard[] } or { data: [] }
+- GET /api/landing/testimonials
+  - Returns: { data: Testimonial[] } or { data: [] }
+- GET /api/landing/pricing
+  - Returns: { data: PricingTier[] } or { data: [] }
+- GET /api/landing/demo-url
+  - Returns: { data: { url: string } } or { data: { url: "" } }
 
-- Prompt 4: "Provide end-to-end front-to-back scaffolding for the Admin Dashboard, including:
-  - Type-safe data models (User, Org, Invoice, Flag, Log, Quota, Metric)
-  - API routes with CRUD for users, quotas, invoices, flags, and logs
-  - Admin RBAC layer
-  - Client-side guards, optimistic UI updates, and robust error handling
-  - Tests for null/undefined data guards and authorization rules."
+3) Frontend Components (Detailed)
+- LandingLayout
+  - Props: navLinks: NavLink[]
+  - Renders Topbar, content slots, Footer
+- Topbar
+  - Props: logo, navLinks, cta
+  - Behavior: responsive collapse on small screens; active link indication
+- HeroSection
+  - Props: title, subtitle, primaryCta, secondaryCta, demoLink
+  - Interactions: clicking Try Demo navigates to /demo page; Sign Up navigates to /signup
+- FeatureCard
+  - Props: feature: FeatureCard
+  - Layout: icon + title + description + optional CTA
+- PricingTeaser
+  - Props: tiers: PricingTier[]
+  - Interactions: CTA to Pricing page
+- TestimonialStrip
+  - Props: testimonials: Testimonial[]
+- DemoAgentLauncher
+  - Props: demoUrl: string
+  - Behavior: opens public agent in full-page view or external tab
+- Footer
+  - Props: none, uses static links
+- LoginSignupModal or Page (for combined auth)
+  - Placeholder route/page that will be wired to [page] Login / Signup Page
+  - Should accommodate email/password login, SSO options, and signup form in a single flow
+  - Validation: email format, password strength basics, required fields
+  - Use dedicated components: AuthForm, SocialLoginButtons, PasswordStrengthMeter (mocked behavior)
 
----
+4) Integration
+- Data fetching
+  - Use a dedicated data fetch hook (useLandingData) to fetch features, testimonials, pricing, and demo URL.
+  - Guard all results with null checks and defaults:
+    - const features = Array.isArray(data?.features) ? data.features : [];
+    - const testimonials = Array.isArray(data?.testimonials) ? data.testimonials : [];
+    - const pricing = Array.isArray(data?.pricing) ? data.pricing : [];
+    - const demoUrl = data?.demoUrl ?? "";
+- State management
+  - Use React useState/useEffect for local UI state.
+  - Initialize arrays with []: useState<FeatureCard[]>([]) and similar for testimonials and pricing.
+  - Ensure any mapping uses safe guards: (features ?? []).map(...) or Array.isArray(features) ? features.map(...) : []
+- Accessibility
+  - All interactive elements are keyboard accessible.
+  - Use aria-labels for icon buttons; ensure color contrasts meet WCAG.
+- Routing
+  - Public landing page at "/"
+  - Demo link navigates to external or internal public demo route (e.g., "/demo")
+  - Sign Up and Login route placeholders ("/signup", "/login")
 
-If you’d like, I can translate this into a concrete repository blueprint with file structure, starter code (TypeScript React components, hooks, and services), mock data generators, and a minimal API schema to accelerate start-up.
+5) User Experience Flow
+- Visitor lands on Homepage
+  - Sees hero with Try Demo and Sign Up CTAs
+  - Can click “Try Demo” to open a public demo agent experience
+  - Scrolls to Feature Cards to understand capabilities
+  - Views Pricing Teaser and clicks to Pricing or Sign Up
+  - Reads testimonials and footer links
+- Visitor clicks Sign Up
+  - Redirect to /signup or opens inline modal (as per app routing)
+  - Completes signup form (email/password, optional SSO)
+- Visitor clicks Try Demo
+  - Opens the public demo agent (new tab or full-page view) using the provided demo URL
+- All data loaded safely with guards; if fetch fails, render graceful placeholders
+- All array data guarded to prevent runtime errors if data is null or undefined
+
+6) Security & Validation
+- Client-side validations:
+  - Email format validation on signup/login
+  - Password length (min 8 chars) and basic strength indicator
+- No sensitive data in frontend; token handling to be integrated with actual auth later
+- Ensure no API secrets are embedded in frontend code
+- All inputs must show inline validation messages in color #EF4444
+
+7) Validation & Acceptance Criteria
+- Frontend renders hero, features, pricing teaser, testimonials, and demo link correctly on initial load
+- All data arrays are safely guarded:
+  - Features, testimonials, and pricing arrays default to [] if fetch returns null or non-array
+- No runtime errors on map/filter/reduce when data is missing
+- useState hooks initialized with correct array types
+- Buttons and links satisfy accessibility guidelines (keyboard focus, ARIA labels)
+- The responsive layout behaves correctly on desktop, tablet, and mobile
+- The demo link launches a public agent experience with the provided URL
+- The combined Auth page placeholder supports:
+  - Email/password login
+  - Simple signup flow
+  - SSO option placeholders
+  - Client-side validation and user feedback
+
+8) UI/UX Guidelines (Design System)
+Follow the provided Design System to ensure consistent look and feel:
+- Color Palette (as provided)
+- Typography (Inter + system fallbacks)
+- Card, Button, Input, and Chip styles
+- Hover and focus states
+- Spacing, grid, and alignment rules
+- Design principles: clean, minimal, professional, modular, trustworthy
+
+9) Visual Style Details (Repeat Brief Recap)
+- Card design: white background, 10–12px radius, subtle borders, soft shadows
+- Topbar: left logo, muted center links, right Login + CTA pill
+- Interactions: subtle lift on hover, micro-animations, quick transitions
+- Data viz: minimal, blue accent (#2563EB), neutral grays for axes
+- Typography: H1 48–56px, H2 20–28px, body 16px, labels 12–14px
+- Layout: container ~1100–1200px max width, 12-column grid, generous white space
+
+10) Deliverables for AI Development Tool
+- A fully-structured prompt that can be consumed by an AI code generator to produce:
+  - React (or chosen frontend framework) components:
+    - LandingLayout, Topbar, HeroSection, FeatureCard, PricingTeaser, TestimonialStrip, DemoAgentLauncher, Footer
+    - Data hooks: useLandingData with safe guards
+    - Placeholder LoginSignupPage or AuthModal implementing email/password login and signup with basic SSO button placeholders
+  - Styles (CSS-in-JS or CSS Modules) that implement the exact color tokens, typography, spacing, and hover/focus states described
+  - Mock API handlers for /api/landing/* endpoints that return deterministic sample data matching the shapes above (ensuring data is optional to simulate null cases)
+  - TypeScript interfaces or PropTypes describing the data models
+  - Accessibility checks (ARIA attributes, keyboard navigation)
+  - Runtime safety code per the mandatory guidelines (null/undefined guards, Array.isArray checks, etc.)
+  - Routing stubs for "/" (landing), "/signup", "/login", "/demo"
+
+Implementation Notes
+- Ensure all data access is guarded:
+  - Example: const features = Array.isArray(data?.features) ? data.features : [];
+  - Example: const demoUrl = data?.demoUrl ?? "";
+- Ensure default export structure aligns with the chosen framework conventions (e.g., React components as default exports, named exports where appropriate).
+- The logo asset must be referenced via a placeholder path (e.g., /assets/logo.png) with guidance for replacing with the real asset.
+- If producing code for SSR or Next.js, ensure dynamic imports are used for data fetching if needed, with proper fallback UI.
+
+Acceptance Criteria Checklist (testable)
+- [ ] Landing page renders hero, feature cards, pricing teaser, testimonials, demo link, and footer without runtime errors.
+- [ ] All array data (features, testimonials, pricing) default to [] when data is null/undefined, with safe mapping using (items ?? []) or Array.isArray checks.
+- [ ] useState hooks for all arrays initialized to [] with correct TypeScript generics.
+- [ ] All API response shapes are validated: const list = Array.isArray(response?.data) ? response.data : [].
+- [ ] Interactive elements (buttons/links) are accessible (keyboard focusable, ARIA labels present).
+- [ ] Try Demo link opens a valid public demo URL in same tab or new tab as per design; the URL is derived from a mock API or hard-coded placeholder in the test harness.
+- [ ] Login / Signup page scaffold exists with:
+  - Email/password fields
+  - Basic client-side validation
+  - Placeholder SSO button group
+  - Submission triggers mock authentication flow
+- [ ] Visual fidelity matches the provided color palette, typography scales, spacing, and card behavior (hover lift, subtle shadows).
+- [ ] Responsive behavior tested at least for 320px, 768px, and 1024px widths; elements reflow gracefully.
+
+Notes for Implementation Team
+- Do not hard-code sensitive data; use mock data for dev/tests and clearly mark placeholders.
+- Keep components modular and reusable so the same FeatureCard, Testimonial, and Pricing components can be reused in other pages (e.g., a dedicated marketing page or an admin dashboard).
+- Document any assumptions or deviations from the design system in a brief PR description to ensure consistency across teams.
+
+This prompt provides the complete, detailed blueprint for building a robust Landing Page with a compatible Login/Signup pathway, following strict runtime safety rules, and aligning with the project’s design language and architecture.
 
 ## Implementation Notes
 

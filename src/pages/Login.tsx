@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AnimatedPage } from '@/components/AnimatedPage'
+import { PasswordStrengthMeter, SocialLoginButtons } from '@/components/auth'
 import { toast } from 'sonner'
 
 const signInSchema = z.object({
@@ -83,7 +84,7 @@ export default function Login() {
                       {...signInForm.register('email')}
                     />
                     {signInForm.formState.errors.email && (
-                      <p className="mt-1 text-sm text-destructive">
+                      <p className="mt-1 text-sm text-[#EF4444]">
                         {signInForm.formState.errors.email.message}
                       </p>
                     )}
@@ -97,11 +98,12 @@ export default function Login() {
                       {...signInForm.register('password')}
                     />
                     {signInForm.formState.errors.password && (
-                      <p className="mt-1 text-sm text-destructive">
+                      <p className="mt-1 text-sm text-[#EF4444]">
                         {signInForm.formState.errors.password.message}
                       </p>
                     )}
                   </div>
+                  <SocialLoginButtons className="mt-4" />
                   <Link
                     to="/password-reset"
                     className="text-sm text-accent hover:underline"
@@ -134,7 +136,7 @@ export default function Login() {
                       {...signUpForm.register('email')}
                     />
                     {signUpForm.formState.errors.email && (
-                      <p className="mt-1 text-sm text-destructive">
+                      <p className="mt-1 text-sm text-[#EF4444]">
                         {signUpForm.formState.errors.email.message}
                       </p>
                     )}
@@ -148,12 +150,14 @@ export default function Login() {
                       className="mt-1"
                       {...signUpForm.register('password')}
                     />
+                    <PasswordStrengthMeter password={signUpForm.watch('password')} className="mt-2" />
                     {signUpForm.formState.errors.password && (
-                      <p className="mt-1 text-sm text-destructive">
+                      <p className="mt-1 text-sm text-[#EF4444]">
                         {signUpForm.formState.errors.password.message}
                       </p>
                     )}
                   </div>
+                  <SocialLoginButtons className="mt-2" />
                   <p className="text-xs text-muted-foreground">
                     By signing up you agree to our{' '}
                     <Link to="/terms" className="text-accent hover:underline">Terms</Link>
