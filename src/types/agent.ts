@@ -8,7 +8,7 @@ export interface FieldValidation {
 
 export interface FormField {
   id: string
-  type: 'text' | 'email' | 'phone' | 'number' | 'select' | 'multiselect' | 'date' | 'textarea'
+  type: 'text' | 'email' | 'phone' | 'number' | 'select' | 'multiselect' | 'date' | 'textarea' | 'checkbox'
   label: string
   placeholder?: string
   required: boolean

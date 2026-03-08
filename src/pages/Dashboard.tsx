@@ -14,6 +14,8 @@ import {
   ArrowRight,
   CreditCard,
   Receipt,
+  FileText,
+  BarChart2,
 } from 'lucide-react'
 import {
   LineChart,
@@ -26,10 +28,12 @@ import {
 } from 'recharts'
 import { useDashboardSummary, useRecentSessions, useDashboardAlerts } from '@/hooks/useDashboard'
 import { useAnalyticsMetrics, useTopValidationFailures } from '@/hooks/useAnalytics'
+import { useOnboardingStatus } from '@/hooks/useOnboarding'
+import { OnboardingStepper } from '@/components/onboarding'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 export default function Dashboard() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary()
@@ -37,6 +41,10 @@ export default function Dashboard() {
   const { data: alertsData } = useDashboardAlerts()
   const { data: metricsSeries = [] } = useAnalyticsMetrics({ interval: 'day' })
   const { data: topFailures = [] } = useTopValidationFailures({ topN: 5 })
+  const { data: onboarding } = useOnboardingStatus()
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false)
+  const stepsCompleted = Array.isArray(onboarding?.stepsCompleted) ? onboarding.stepsCompleted : []
+  const showOnboarding = !onboardingDismissed && stepsCompleted.length < 5
 
   const sessions = Array.isArray(recentData?.sessions) ? recentData.sessions : []
   const alerts = Array.isArray(alertsData?.alerts) ? alertsData.alerts : []
@@ -70,7 +78,19 @@ export default function Dashboard() {
                 <h1 className="text-2xl font-semibold text-foreground">Overview</h1>
                 <p className="text-muted-foreground">Monitor your agents and sessions.</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/dashboard/templates">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Templates
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/dashboard/sessions">
+                    <BarChart2 className="mr-2 h-4 w-4" />
+                    View analytics
+                  </Link>
+                </Button>
                 <Button variant="outline" size="sm" asChild>
                   <Link to="/dashboard/billing">
                     <CreditCard className="mr-2 h-4 w-4" />
@@ -94,6 +114,13 @@ export default function Dashboard() {
           </div>
 
           <div className="p-8 max-w-[1200px] space-y-8">
+            {/* Onboarding checklist */}
+            {showOnboarding && (
+              <OnboardingStepper
+                onDismiss={() => setOnboardingDismissed(true)}
+              />
+            )}
+
             {/* Alerts */}
             {alerts.length > 0 && (
               <Card className="border-warning/50 bg-warning/5 animate-fade-in-up">

@@ -14,9 +14,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { GripVertical, Plus, Trash2 } from 'lucide-react'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import { GripVertical, Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import { useState } from 'react'
+import { ValidationEditor } from './ValidationEditor'
+import { ConditionalLogicEditor } from './ConditionalLogicEditor'
+import type { FormField, FieldValidation } from '@/types/agent'
 import { cn } from '@/lib/utils'
-import type { FormField } from '@/types/agent'
 
 const FIELD_TYPES: FormField['type'][] = [
   'text',
@@ -27,6 +35,7 @@ const FIELD_TYPES: FormField['type'][] = [
   'multiselect',
   'date',
   'textarea',
+  'checkbox',
 ]
 
 export interface FieldListProps {
@@ -47,6 +56,7 @@ export function FieldList({
   className,
 }: FieldListProps) {
   const list = Array.isArray(fields) ? fields : []
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const updateAt = (index: number, patch: Partial<FormField>) => {
     const next = [...list]
@@ -174,6 +184,38 @@ export function FieldList({
                         Required
                       </label>
                     </div>
+                    <Collapsible
+                      open={expandedId === field.id}
+                      onOpenChange={(open) => setExpandedId(open ? field.id : null)}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                          aria-expanded={expandedId === field.id}
+                        >
+                          {expandedId === field.id ? (
+                            <ChevronDown className="h-3 w-3" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3" />
+                          )}
+                          Validation &amp; conditions
+                        </button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-3 space-y-3 border-t border-border pt-3">
+                        <ValidationEditor
+                          field={field}
+                          onChange={(validations: FieldValidation[]) => updateAt(index, { validations })}
+                          disabled={disabled}
+                        />
+                        <ConditionalLogicEditor
+                          field={field}
+                          allFields={list}
+                          onChange={(conditionalLogic) => updateAt(index, { conditionalLogic })}
+                          disabled={disabled}
+                        />
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                   <Button
                     type="button"

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,7 +11,10 @@ import {
   PersonaEditor,
   AppearanceEditor,
   AttachmentsPanel,
+  InlineTips,
+  LiveChatPreview,
 } from '@/components/agent-builder'
+import type { BuilderTab } from '@/components/agent-builder'
 import { useAgent, useUpdateAgent, useCreateAgent } from '@/hooks/useAgents'
 import type { FormField, Persona, Appearance } from '@/types/agent'
 import { ArrowLeft, Settings2, MessageSquare, Palette, FileText, Loader2 } from 'lucide-react'
@@ -47,6 +50,7 @@ export default function AgentBuilder() {
   const [fields, setFields] = useState<FormField[]>(initialFields)
   const [persona, setPersona] = useState<Persona>(initialPersona)
   const [appearance, setAppearance] = useState<Appearance>(initialAppearance)
+  const [activeTab, setActiveTab] = useState<BuilderTab>('fields')
 
   useEffect(() => {
     setName(agent?.name ?? '')
@@ -55,6 +59,37 @@ export default function AgentBuilder() {
     setPersona(initialPersona)
     setAppearance(initialAppearance)
   }, [agent?.name, agent?.description, initialFields, initialPersona, initialAppearance])
+
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const formStateRef = useRef({ id, name, description, fields, persona, appearance, updateAgent })
+  formStateRef.current = { id, name, description, fields, persona, appearance, updateAgent }
+  const autoSave = useCallback(() => {
+    if (isNew || !id) return
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    autoSaveTimerRef.current = setTimeout(() => {
+      const s = formStateRef.current
+      if (!s.id) return
+      s.updateAgent.mutate({
+        id: s.id,
+        data: {
+          name: s.name.trim() || undefined,
+          description: s.description.trim() || undefined,
+          fields: s.fields,
+          persona: s.persona,
+          appearance: s.appearance,
+        },
+      })
+      autoSaveTimerRef.current = null
+    }, 2000)
+  }, [id, name, description, fields, persona, appearance, isNew])
+
+  useEffect(() => {
+    if (isNew || !id) return
+    autoSave()
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    }
+  }, [autoSave, id, isNew])
 
   const handleSave = () => {
     if (isNew) {
@@ -115,13 +150,18 @@ export default function AgentBuilder() {
               </div>
             </div>
           </div>
-          <div className="p-8">
-            {agentLoading && !agent ? (
+          <div className="p-8 max-w-[1200px]">
+            <div className="grid gap-8 lg:grid-cols-[1fr,320px]">
+              <div className="min-w-0">
+                {agentLoading && !agent ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
-            ) : (
-              <>
+                ) : (
+                  <>
+                    <div className="mb-6">
+                  <InlineTips activeTab={activeTab} className="mb-4" />
+                </div>
                 <div className="mb-6 space-y-4">
                   <div>
                     <Label htmlFor="agent-name">Agent name</Label>
@@ -147,7 +187,11 @@ export default function AgentBuilder() {
                   </div>
                 </div>
 
-                <Tabs defaultValue="fields" className="w-full">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(v) => setActiveTab(v as BuilderTab)}
+                  className="w-full"
+                >
                   <TabsList className="mb-6">
                     <TabsTrigger value="fields" className="gap-2">
                       <Settings2 className="h-4 w-4" />
@@ -212,9 +256,21 @@ export default function AgentBuilder() {
                       {isNew ? 'Cancel' : 'Publish'}
                     </Link>
                   </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="hidden lg:block shrink-0">
+                <div className="sticky top-8">
+                  <LiveChatPreview
+                    agentName={name}
+                    fields={fields}
+                    persona={persona}
+                    appearance={appearance}
+                  />
                 </div>
-              </>
-            )}
+              </div>
+            </div>
           </div>
         </main>
       </div>
