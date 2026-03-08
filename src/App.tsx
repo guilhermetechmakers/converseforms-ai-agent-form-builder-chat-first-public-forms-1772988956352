@@ -17,7 +17,16 @@ import DashboardTemplates from '@/pages/DashboardTemplates'
 import Webhooks from '@/pages/Webhooks'
 import Billing from '@/pages/Billing'
 import DashboardSettings from '@/pages/DashboardSettings'
-import AdminDashboard from '@/pages/AdminDashboard'
+import {
+  AdminLayout,
+  DashboardOverview,
+  UsersManagement,
+  QuotasAndDefaults,
+  BillingOversight,
+  SystemLogs,
+  FeatureFlagsAndConfig,
+  AnalyticsAndReporting,
+} from '@/components/admin'
 import Profile from '@/pages/Profile'
 import Privacy from '@/pages/Privacy'
 import Terms from '@/pages/Terms'
@@ -57,7 +66,15 @@ export default function App() {
           <Route path="/dashboard/webhooks" element={<Webhooks />} />
           <Route path="/dashboard/billing" element={<Billing />} />
           <Route path="/dashboard/settings" element={<DashboardSettings />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<DashboardOverview />} />
+            <Route path="users" element={<UsersManagement />} />
+            <Route path="quotas" element={<QuotasAndDefaults />} />
+            <Route path="billing" element={<BillingOversight />} />
+            <Route path="logs" element={<SystemLogs />} />
+            <Route path="flags" element={<FeatureFlagsAndConfig />} />
+            <Route path="analytics" element={<AnalyticsAndReporting />} />
+          </Route>
           <Route path="/chat/:slug" element={<PublicChat />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/profile" element={<Profile />} />
