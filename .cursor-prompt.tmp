@@ -881,200 +881,273 @@ When implementing this project:
 ---
 
 **Remember: Always reference this file for design decisions. Do not use generic or placeholder designs.**
- for bestpractices and # 404 Not Found Page
+ for bestpractices and # Persona & Appearance Editor
 
 ## Overview
-Create a friendly, branded 404 Not Found page for routes that don’t exist. The page should guide users back to the landing page or the dashboard, provide helpful context, a lightweight search, and quick navigation links. It must adhere to the project’s design system, ensure runtime safety for all data handling, and require no external API connections.
-
-## Page Description (Full Detail)
-What this page is:
-- A polished 404 Not Found page that clearly communicates that the requested route does not exist, while presenting safe paths to recovery.
-
-Goals:
-- Reduce user frustration with a warm, helpful tone.
-- Offer direct routes back to the landing page or the dashboard.
-- Provide a lightweight search box to help users find relevant content or forms.
-- Present quick links (Home, Help, Contact Support) to support user remediation.
-- Maintain visual consistency with the rest of the ConverseForms UI (cards, typography, spacing, and color system).
-
-Connected features (from PROJECT CONTEXT):
-- No real-time API integration is required for this page.
-- The page should be self-contained but visually consistent with the existing UI/UX patterns (cards, search field, primary CTA pills, muted metadata, subtle elevation shadows).
-
-UI elements and visual guidance:
-- Headline: Bold, centered hero message indicating the page is not found (e.g., “Oops—infinite pages not found” or “That page doesn’t exist.”).
-- Subheading: Brief supportive copy explaining the situation.
-- Search box: Inline search field to help users look for content or forms, with accessible labeling and clear error-free styling.
-- Primary actions:
-  - Button to return to Landing/Home.
-  - Button to return to Dashboard (if authenticated or applicable).
-- Quick Links: 
-  - Home
-  - Help
-  - Contact Support
-- Visual cues:
-  - Centered focus card above a subdued page backdrop (could be a clean, minimal illustration or a soft gradient as per design system).
-  - Optional subtle gradient/overlay to emphasize the center card if a hero image is used.
-- Accessibility:
-  - All interactive elements must be keyboard accessible.
-  - ARIA labels and appropriate semantic HTML.
-  - Color contrast adheres to accessibility standards.
-
-UI/UX guidelines (consistent with the provided style system):
-- Use a centered layout with a constrained max width (~1100–1200 px) and generous horizontal padding.
-- Maintain the typographic rhythm with the specified scale (H1 ~48–56 px, weight 700; body text 16 px, color #6B7280; labels 12–14 px).
-- Cards: white background, subtle border or shadow, rounded corners (10–12 px).
-- Primary CTA uses the brand dark color (#111827) with white text; hover/focus states exhibit a slightly darker shade or enhanced shadow.
-- Secondary/ghost actions use light borders or subtle backgrounds (e.g., #F8FAFC).
-- Spacing: vertical rhythm with ~24 px baseline and larger gaps (48–64 px) between major blocks.
-- Color usage follows the palette defined in the project (white canvas, deep text, muted metadata, subtle borders, orange accents for micro-actions, etc.).
-
-Mandatory Coding Standards — Runtime Safety
-CRITICAL: All generated code must guard against null/undefined values before calling array methods and guard API results as specified.
-
-- Supabase-like data handling (even if not used on this page): Use nullish coalescing for any potential array results:
-  - const items = data ?? []
-  - If used, guard with Array.isArray checks: Array.isArray(items) ? items.map(...) : []
-- Array methods: Never call on values that could be null/undefined; use:
-  - (items ?? []).map(...)
-  - or Array.isArray(items) ? items.map(...) : []
-- useState defaults for arrays: Initialize with proper types
-  - const [links, setLinks] = useState<string[]>([])
-  - const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-- API/Response shapes:
-  - const list = Array.isArray(response?.data) ? response.data : []
-- Optional chaining:
-  - Access nested API/db results with optional chaining: data?.field?.subfield
-- Destructuring with defaults:
-  - const { items = [], count = 0 } = response ?? {}
+Build a no-code friendly Persona & Appearance Editor for ConverseForms that lets creators define and refine AI agents representing public forms. Each agent encapsulates a persona (tone, instructions, style guide, prohibited topics), an appearance profile (avatar URL, color scheme, chat bubble settings), and constrained behaviors (verbosity caps, disallowed responses). The system should support live preview via sandboxed LLM or deterministic simulator, and expose REST endpoints to update persona and appearance. The project includes three associated pages: Agent Detail / Publish Page, Agent Builder / Editor, and Public Chat Page (Agent URL). All components must be robust against null/undefined values and strictly adhere to the runtime safety rules described in the project context.
 
 ## Components to Build
-- 404HeroCard
-  - Centered card containing:
-    - Title (H1)
-    - Subtitle text
-    - Optional illustration placeholder (SVG) or minimal decorative asset
-  - Search input with clear affordance
-  - Two primary CTAs: Go to Landing, Go to Dashboard
-- QuickLinksRow
-  - Horizontal row of links: Home, Help, Contact Support
-  - Each link styled as small, accessible text or pill, consistent with UI
-- BackNavigationBar (optional, if existing app uses a top navigation scaffold)
-  - Subtle bottom border to separate page from header
-- Accessibility and utility components
-  - Visually-hidden text for screen readers
-  - Focus ring style consistent with palette (#2563EB)
-  - Small utility chips (optional) for status hints (e.g., “Not found”, “Try search”)
+1) Persona & Appearance Editor (Editor UI)
+- Purpose: Core no-code interface to create/edit an agent.
+- Sub-features:
+  - Persona: tone, instructions, style guide, prohibited topics, maximum verbosity, allowed/blocked topics, response length caps.
+  - Appearance: avatar URL, primary/secondary color palette, chat bubble styling (bubble color, text color, bubble radius, avatar placement), font/tokens for chat UI.
+  - Contextual knowledge: attach contextual knowledge, FAQs, product information blocks.
+  - Validations: required fields (agent name, at least one persona attribute, avatar URL valid format), mutual exclusivity checks (e.g., cannot both enforce maximum verbosity and unlimited verbosity).
+  - Live Preview: sandboxed simulation of agent responses using either a sandbox LLM or deterministic simulator with the current persona and appearance. Preview must render transcript, with fields collection status (which fields are required, which collected).
+  - Field Definitions: define required form fields (name, email, etc.) with order, validation rules (required, pattern, min/max length), and conditional logic (show/hide questions based on previous answers).
+  - Save/Publish: draft vs. published state, versioning, and audit trail.
+
+2) Agent Detail / Publish Page
+- Purpose: Admin view summarizing agent configuration, publish state, public URL, embed options, usage metrics, and quick actions.
+- Sub-features:
+  - Summary Card: agent name, status (draft/published), last updated, author.
+  - Publish State: current publish status, publish date, revoke access toggle.
+  - Public URL & Embedding: copy URL, generate embed code (iframe), embed options (width/height, theme), and allow enabling/disabling public access.
+  - Usage Metrics: sessions count, messages exchanged, completion rate, field completion stats (per required field), recent activity.
+  - Quick Actions: Open Public Link, Copy URL, Regenerate URL, Revoke Access, Export/Import agent configuration.
+  - Validation & Safety: ensure URLs and embed codes are sanitized; ensure only published agents expose a public URL.
+  - History & Logs: display recent changes, who changed what and when.
+
+3) Public Chat Page (Agent URL)
+- Purpose: Full-page chat interface visitors see when they open a public agent link.
+- Behavior:
+  - Agent Initiation: agent starts conversation automatically without user authentication (unless optional verification is enabled).
+  - Field Collection: required fields are collected in natural dialogue; show progress indicator (e.g., Step X of Y) and transcript of prior messages.
+  - Transcript & Progress: render full chat transcript with timestamps, per-message metadata, and field completion status; allow user to review previously provided answers.
+  - Accessibility: ensure responsive UI, keyboard navigation, and ARIA attributes for assistive tech.
+  - Data Handling: store all messages and user-provided field values in a session entity; support webhook delivery on completion.
+  - Optional Verification: if enabled, require minimal authentication (e.g., email verification, one-time code) before continuing.
+  - No Authentication by Default: respondents are unauthenticated by default; implement robust session-scoped security (session IDs, secure cookies, CSRF considerations).
 
 ## Implementation Requirements
 
 ### Frontend
-- Layout
-  - Constrained container with max-width 1100–1200 px
-  - Centered hero block with responsive behavior (stack content on narrow screens)
-- Typography
-  - Use H1 (48–56 px) with color #0F1724 and weight 700
-  - Body copy at 16 px, color #6B7280
-- UI Elements
-  - Search field
-    - Background: #FFFFFF
-    - Border: 1 px #E6E7EB
-    - Radius: 8–10 px
-    - Focus ring: 2 px #2563EB
-    - Accessible label
-  - Buttons
-    - Landing/Home button: primary filled (#111827) with white text
-    - Dashboard button: secondary/ghost or secondary filled style as appropriate
-    - Hover/focus states: subtle shadow or color change
-  - Quick links
-    - Inline row or compact pill-style items
-- Data safety
-  - If any dynamic data is introduced (e.g., suggested pages or recent docs), ensure all arrays are handled with (array ?? []) or Array.isArray guards
-  - No assumptions that data is present; render fallback text if needed
-- State management
-  - If search is functional (client-side), use useState<string> for input and lightweight filtering of a local static dataset
-  - Initialize arrays with proper types: useState<string[]>([]) for any lists
-- Accessibility
-  - Contrast checks for text on background
-  - ARIA attributes for buttons and input
-  - Keyboard navigable
-- Styling system
-  - Follow the provided color palette, typography, and spacing
-  - Utilize the same card/shadow language as other components
-  - Ensure the page visually rises above any background with a subtle overlay or radial fade if used
+- Frameworks: React (with TypeScript), using a design system consistent with the project.
+- State Management: useState/useEffect for local component state, and a global state/store (e.g., Zustand or Redux) for agent data where appropriate.
+- Accessibility: all interactive elements accessible via keyboard; focus management after actions; readable color contrast.
+- UI Components to Build:
+  - Editor Panels:
+    - Persona Editor Panel: selects/toggles for tone, instruction blocks, style guide text areas, topic restrictions, verbosity controls.
+    - Appearance Panel: avatar uploader/URL input, color pickers for primary/secondary colors, chat bubble styles (colors, radius), font tokens.
+    - Context Knowledge Panel: blocks for FAQs, product info, and contextual snippets; drag-and-drop ordering for FAQs.
+    - Field Builder Panel: define fields with order, type (text, email, number, select, boolean), validation rules, conditional logic (show/hide), and placeholder hints.
+    - Live Preview Panel: sandboxed preview rendering a simulated agent session with the current persona/appearance; show transcript, simulated user responses, and field prompts.
+  - Publish & Detail Panels:
+    - Summary Cards: status, dates, author, public URL.
+    - Embedding Panel: embed code generator, resize options, theme integration options.
+    - Usage Metrics Cards: small graphs or sparklines (blue #2563EB, neutral grays).
+    - Quick Actions Bar: buttons for Open Public Link, Copy URL, Regenerate URL, Revoke Access.
+  - Public Chat Page:
+    - Chat Window: conversation area with agent messages, user messages, input field, and quick-reply suggestions.
+    - Progress Tracker: shows which required fields are remaining and progress percentage.
+    - Transcript View: collapsible transcript log, timestamped messages, and per-message metadata.
+    - Session Management: session-ID handling stored in secure httpOnly cookies or URL-safe tokens; display session status.
+- Validation & Safety:
+  - Guard all array operations: ensure any array-like data is validated or guarded with (items ?? []) or Array.isArray(items) ? items.map(...) : [].
+  - Supabase integration (if used): fetch results with const items = data ?? [] to avoid null results.
+  - Use proper default initial states: useState<T[]>([]) for arrays, useState<AgentPersona | null>(null) for single objects where appropriate.
+  - Validation rules for inputs: non-empty agent name, valid avatar URL, valid color hex codes, valid JSON for contextual blocks, and required fields defined in builder.
+- API Communication:
+  - Endpoints: PUT /api/agents/:id/persona, PUT /api/agents/:id/appearance (as per project context). Include proper validation, optimistic UI updates, and error handling.
+  - Data shaping: expect response shapes; guard with Array.isArray(response?.data) ? response.data : [] when mapping.
+  - Webhook integrations (optional): allow sending final session data to external systems on completion.
 
 ### Backend
-- Not required for this page since the project context specifies no API integrations
-- If future enhancements introduce dynamic quick links or search suggestions, design endpoints to fetch:
-  - QuickLinks: GET /api/links
-  - SearchIndex: GET /api/search?q=
-- All endpoints should return predictable shapes; validate with Array.isArray on response.data and guard against nulls
+- Data Models:
+  - Agent
+    - id: string
+    - name: string
+    - persona: Persona
+    - appearance: Appearance
+    - fields: FieldConfig[] (ordered)
+    - contextKnowledge: KnowledgeBlock[]
+    - status: 'draft' | 'published' | 'revoked'
+    - publishInfo: { url: string; embedCode?: string; publicEnabled: boolean; generatedAt: string; }
+    - metrics: { sessions: number; completions: number; completionRate?: number; lastActive?: string; }
+    - createdAt: string
+    - updatedAt: string
+  - Persona
+    - tone: string
+    - instructions: string[]
+    - styleGuide: string
+    - prohibitedTopics: string[]
+    - maxVerbosity: number
+    - allowedTopics?: string[]
+    - disallowedTopics?: string[]
+  - Appearance
+    - avatarUrl: string
+    - primaryColor: string (hex)
+    - secondaryColor: string (hex)
+    - bubbleColor: string (hex)
+    - bubbleTextColor: string (hex)
+    - bubbleRadius: number
+  - FieldConfig
+    - id: string
+    - key: string
+    - label: string
+    - type: 'text'|'email'|'number'|'select'|'boolean'|'date'
+    - required: boolean
+    - order: number
+    - validations: { pattern?: string; min?: number; max?: number; maxLength?: number; minLength?: number; }
+    - options?: string[]
+    - conditional?: { whenField: string; operator: 'equals'|'notEquals'|'in'| 'notIn'; value: any }
+  - KnowledgeBlock
+    - id: string
+    - type: 'faq'|'productInfo'|'policy'
+    - content: string
+  - Session
+    - id: string
+    - agentId: string
+    - startedAt: string
+    - messages: Message[]
+    - collectedFields: { [fieldKey]: string | boolean | number | null }
+  - Message
+    - role: 'agent'|'user'
+    - text: string
+    - timestamp: string
+    - fieldKey?: string
+- API Endpoints:
+  - PUT /api/agents/:id/persona
+    - Body: { tone, instructions, styleGuide, prohibitedTopics, maxVerbosity, allowedTopics, disallowedTopics }
+    - Validation: required agent exists; fields validated; guard strings; ensure maxVerbosity within bounds; sanitize inputs.
+    - Response: updated Persona object, status 200; error handling with meaningful messages.
+  - PUT /api/agents/:id/appearance
+    - Body: { avatarUrl, primaryColor, secondaryColor, bubbleColor, bubbleTextColor, bubbleRadius }
+    - Validation: URL format for avatarUrl; hex color validation; numeric bounds for radius.
+    - Response: updated Appearance object, status 200.
+  - GET /api/agents/:id/public-url
+    - Returns public URL and embed code snippets; ensure published agents only.
+  - POST /api/agents/:id/sessions
+    - Creates a new interactive session for a public chat; initialize required fields from FieldConfig; store session in DB.
+  - POST /api/sessions/:sessionId/messages
+    - Persist user/agent messages; update collectedFields accordingly.
+  - GET /api/agents/:id/metrics
+    - Returns usage metrics; ensure safe defaults if data missing: const metrics = data ?? {}.
+- Data Validation & Security:
+  - Always validate API inputs; reject invalid data with 4xx responses.
+  - Authentication: Admin endpoints secured; public chat endpoints do not require login by default; support optional verification path via config.
+  - Input sanitization: escape strings that are rendered in UI; avoid injection vulnerabilities.
+  - Data integrity: enforce referential integrity between Agent, Persona, Appearance, and FieldConfig.
 
 ### Integration
-- Route: Connect to your routing system (e.g., React Router) to render at all non-matched paths
-- Consistency: Ensure the 404 page uses the same layout container and typography as the rest of the app
-- Fallback behavior: If user lands on this page, navigation actions should route to the landing page or the dashboard depending on authentication state
+- Flow:
+  - Editor updates Persona and Appearance via PUT endpoints; UI reflects live preview by re-fetching agent data or optimistic updates with rollback on error.
+  - Agent Builder defines fields and conditional logic; builder saves to Agent model under fields array with order.
+  - When an agent is published, publishInfo.url is created/generated; the Public Chat Page uses agentId to fetch persona/appearance, required fields, and contextual knowledge to drive conversation.
+  - Public Chat Page initiates a new Session; agent’s persona and appearance govern responses; required fields are prompted in order; user input is captured and saved to the Session.
+  - Live Preview uses a sandbox LLM or deterministic simulator that applies persona constraints (tone, prohibited topics) and appearance style during responses.
+- Data Flow:
+  - Frontend always guards against null data: (data ?? []) and Array.isArray checks; default states are arrays with [].
 
 ## User Experience Flow
-1. User navigates to a non-existent route (e.g., /nonexistent-page).
-2. The app renders the 404 Not Found Page with a prominent, friendly message.
-3. The user sees a search box to quickly locate content or forms.
-4. The user can take one of the following:
-   - Click “Go to Landing” to return to the landing page.
-   - Click “Go to Dashboard” to return to the dashboard (if authenticated).
-   - Use Quick Links: Home, Help, Contact Support.
-5. If the route is a miss but content is found via search, optionally display a lightweight result list (guarded for null/undefined) or redirect accordingly.
-6. Page remains consistent with design system for a cohesive experience.
+1) Creator lands on Agent Builder / Editor (page_009)
+   - Create a new agent or edit an existing one.
+   - Define fields (name, email, etc.) with order and validations; set conditional logic to show/hide fields.
+   - Configure Persona: set tone (friendly, formal, concise), write concise instructions, attach a style guide, list prohibited topics, set max verbosity, and assign allowed/disallowed topics.
+   - Configure Appearance: upload or specify avatar URL, pick primary/secondary colors, set chat bubble colors and radius, set font tokens.
+   - Attach contextual knowledge: FAQs, product info, policies; arrange order.
+   - Preview: click Preview to run a sandbox session that demonstrates agent responses and field prompts.
+   - Save as Draft or Publish. If publishing, generate public URL and embed options.
+2) Admin views Agent Detail / Publish Page (page_008)
+   - See a summary of agent configuration, status, last updated, and author.
+   - View and copy the public URL; generate embed code; adjust embed dimensions and theme.
+   - Review usage metrics; monitor sessions, completions, and field-level completion rates.
+   - Use quick actions: Open Public Link, Copy URL, Regenerate URL, Revoke Access.
+   - Manage publish state: switch between draft and published; revoke access as needed.
+3) Public Chat Page (Agent URL) (page_010)
+   - Visitors open the public URL; no authentication required by default.
+   - The agent initiates the conversation; required fields are collected through natural dialogue.
+   - UI shows a live transcript of the chat, progress on required fields, and the remaining fields to fill.
+   - All messages and user-provided field values are stored in a Session; optional verification can be enabled for respondent login.
+   - On completion, optional webhook is triggered to push data to external systems.
 
 ## Technical Specifications
 
-- Data Models
-  - No server-side data required for this page.
-  - If future expansion introduces a small local dataset, define TypeScript interfaces:
-    - interface QuickLink { id: string; label: string; href: string; }
-    - interface SearchResult { id: string; title: string; snippet?: string; href: string; }
+### Data Models (Schema Snippets)
+- Agent: { id, name, persona, appearance, fields: FieldConfig[], contextKnowledge: KnowledgeBlock[], status, publishInfo, metrics, createdAt, updatedAt }
+- Persona: { tone: string, instructions: string[], styleGuide: string, prohibitedTopics: string[], maxVerbosity: number, allowedTopics?: string[], disallowedTopics?: string[] }
+- Appearance: { avatarUrl: string, primaryColor: string, secondaryColor: string, bubbleColor: string, bubbleTextColor: string, bubbleRadius: number }
+- FieldConfig: { id, key, label, type, required, order, validations: { pattern?, min?, max?, minLength?, maxLength? }, options?, conditional? }
+- KnowledgeBlock: { id, type: 'faq'|'productInfo'|'policy', content: string }
+- Session: { id, agentId, startedAt, messages: Message[], collectedFields: Record<string, any> }
+- Message: { role: 'agent'|'user', text: string, timestamp, fieldKey? }
 
-- API Endpoints
-  - Not required for current scope.
-  - If added later:
-    - GET /api/links -> returns { data: QuickLink[] } or { data: null } (guarded as data ?? [])
-    - GET /api/search?q= -> returns { data: SearchResult[] } or { data: null } (guarded similarly)
+### API Endpoints (Key Routes)
+- PUT /api/agents/:id/persona
+  - Body: { tone, instructions, styleGuide, prohibitedTopics, maxVerbosity, allowedTopics, disallowedTopics }
+  - Response: { agentId, persona }
+- PUT /api/agents/:id/appearance
+  - Body: { avatarUrl, primaryColor, secondaryColor, bubbleColor, bubbleTextColor, bubbleRadius }
+  - Response: { agentId, appearance }
+- GET /api/agents/:id/public-url
+  - Response: { publicUrl, embedCode }
+- POST /api/agents/:id/sessions
+  - Body: { optionalStartData? }
+  - Response: { sessionId, startedAt }
+- POST /api/sessions/:sessionId/messages
+  - Body: { role, text, fieldKey? }
+  - Response: { updatedSession, message }
+- GET /api/agents/:id/metrics
+  - Response: { sessions, completions, completionRate, lastActive }
 
-- Security
-  - No authentication requirements for the 404 page itself.
-  - If overriding to show Dashboard link only for authenticated users, rely on existing auth state at render.
+### Security
+- Admin endpoints require authentication/authorization.
+- Public endpoints require no auth by default; enable optional verification.
+- Input validation and sanitization on all endpoints.
+- Use CSRF protection for state-changing requests in the admin UI; ensure session tokens are HttpOnly when stored server-side.
 
-- Validation
-  - If user enters text into the search, ensure non-null, non-empty strings before attempting to filter.
-  - When rendering arrays (e.g., quick links), guard with Array.isArray or (array ?? []) to avoid runtime errors.
+### Validation
+- Input validation rules:
+  - Agent name: non-empty.
+  - Avatar URL: valid URL format (http/https).
+  - Colors: valid hex color codes (#RRGGBB).
+  - BubbleRadius: numeric, within reasonable bounds (0-24 px or as defined).
+  - Field definitions: required flag must be coherent with validations; conditional logic references existing field keys.
+  - Persona: maxVerbosity within configured bounds; prohibited topics as non-empty lists.
+- Runtime safety:
+  - Guard all array usages: (array ?? []).map(...) or Array.isArray(array) ? array.map(...) : [].
+  - Initialize state with correct types: useState<Type[]>([]) for arrays; useState<AgentPersona | null>(null) where appropriate.
+  - Use optional chaining: obj?.property?.nested when accessing API results.
+  - Destructure with defaults: const { items = [], count = 0 } = response ?? {}.
 
 ## Acceptance Criteria
-- [ ] The page renders with a centered hero message, supportive copy, a search input, and two primary actions (Landing and Dashboard).
-- [ ] Quick Links (Home, Help, Contact Support) are visible and clickable.
-- [ ] Search input accepts input and is accessible; does not crash with undefined data (guarded via (data ?? []) and Array.isArray checks).
-- [ ] No runtime errors when navigating to non-existent routes; the page maintains design system styling and layout.
-- [ ] All array operations are guarded to prevent calling map/filter/reduce on null/undefined values.
+- [ ] Editor can create/edit an agent with at least one field, a defined persona, and an appearance configuration; live preview accurately reflects persona and appearance.
+- [ ] Publishing an agent yields a valid public URL and embed code; the public page starts a live chat session and collects required fields in sequence.
+- [ ] Public chat page functions without authentication by default; optional verification path works; transcripts and progress persist in the session store.
+- [ ] All API endpoints validate input and guard against null/undefined results; runtime array operations are guarded as specified.
+- [ ] UI components adhere to the provided visual style, accessibility standards, and design tokens; interactions have smooth micro-interactions and accessible focus states.
 
 ## UI/UX Guidelines
-Apply the project’s design system:
-- White page canvas (#FFFFFF)
-- Muted metadata (#6B7280) for non-primary text
-- Deep charcoal (#0F1724) for headings
-- Subtle borders/shadows (#E6E7EB, rgba(15,23,36,0.06))
-- Primary CTA (#111827)
-- Accent color (orange #FF6A00) may be used sparingly for micro-interactions or focus
-- Ensure the page remains consistent with the 12-column grid, responsive spacing, and typography rules described earlier
+Apply the project's design system:
+- Follow the color palette, typography, spacing, and card design patterns described in the Visual Style section.
+- Maintain a clean, modern, and minimal aesthetic; content-first with clear call-to-actions.
+- Use centered hero content for focal emphasis in global views while keeping body content left-aligned for lists and detailed panels.
+- Keep interactions consistent: hover lifts, focus rings, and subtle motion for feedback.
+- Ensure responsive behavior for builder, detail, and public chat pages; maintain legibility on smaller viewports.
 
 ## Visual Style
-Maintain consistency with the provided Visual Style section:
-- Card-based, clean, minimal, with centered hero and elevated card
-- Accessible typography and color contrasts
-- Subtle motion for focus and hover states
-- No external API dependencies for this page unless future needs arise
+
+Color Palette, Typography, and Layout details are provided in the prompt (already enumerated). Implement the exact color tokens and typography hierarchy to ensure visual consistency with the project’s design language.
+
+### Key Design Elements
+- Card Design: white cards with soft borders or shadows; hover lift interactions.
+- Navigation: top bar and side nav patterns as described.
+- Data Visualization: minimal, low-ink charts for metrics.
+- Interactive Elements: primary/secondary/tertiary button system reflecting the specified color tokens.
+
+### Mandatory Coding Standards — Runtime Safety
+CRITICAL: All generated code must guard against null/undefined values before calling array methods (.map, .filter, .reduce, etc.).
+- Supabase results: use nullish coalescing: const items = data ?? [].
+- Array methods: (items ?? []).map(...) or Array.isArray(items) ? items.map(...) : [].
+- React useState: initialize with correct type, e.g., useState<T[]>([]).
+- API response shapes: const list = Array.isArray(response?.data) ? response.data : [].
+- Optional chaining: use obj?.property?.nested.
+- Destructuring with defaults: const { items = [], count = 0 } = response ?? {}.
 
 ---
 
-Generate the complete, detailed prompt now so an AI development tool can implement the 404 Not Found Page with the above requirements. for style.
+If you need this prompt tailored for a specific AI development tool (e.g., a particular prompt template engine, LLM orchestration framework, or a repository structure you’re using), tell me the target environment and I’ll adapt the prompts and formatting accordingly. for style.
 
 CRITICAL DESIGN REQUIREMENTS:
 - You MUST follow ALL design principles and patterns specified in the Design Reference above
@@ -1096,200 +1169,273 @@ CRITICAL TECHNICAL REQUIREMENTS:
 - When Supabase is configured: use Edge Functions for LLM and server-only logic; never expose API keys in the client
 
 === TASK ===
-# 404 Not Found Page
+# Persona & Appearance Editor
 
 ## Overview
-Create a friendly, branded 404 Not Found page for routes that don’t exist. The page should guide users back to the landing page or the dashboard, provide helpful context, a lightweight search, and quick navigation links. It must adhere to the project’s design system, ensure runtime safety for all data handling, and require no external API connections.
-
-## Page Description (Full Detail)
-What this page is:
-- A polished 404 Not Found page that clearly communicates that the requested route does not exist, while presenting safe paths to recovery.
-
-Goals:
-- Reduce user frustration with a warm, helpful tone.
-- Offer direct routes back to the landing page or the dashboard.
-- Provide a lightweight search box to help users find relevant content or forms.
-- Present quick links (Home, Help, Contact Support) to support user remediation.
-- Maintain visual consistency with the rest of the ConverseForms UI (cards, typography, spacing, and color system).
-
-Connected features (from PROJECT CONTEXT):
-- No real-time API integration is required for this page.
-- The page should be self-contained but visually consistent with the existing UI/UX patterns (cards, search field, primary CTA pills, muted metadata, subtle elevation shadows).
-
-UI elements and visual guidance:
-- Headline: Bold, centered hero message indicating the page is not found (e.g., “Oops—infinite pages not found” or “That page doesn’t exist.”).
-- Subheading: Brief supportive copy explaining the situation.
-- Search box: Inline search field to help users look for content or forms, with accessible labeling and clear error-free styling.
-- Primary actions:
-  - Button to return to Landing/Home.
-  - Button to return to Dashboard (if authenticated or applicable).
-- Quick Links: 
-  - Home
-  - Help
-  - Contact Support
-- Visual cues:
-  - Centered focus card above a subdued page backdrop (could be a clean, minimal illustration or a soft gradient as per design system).
-  - Optional subtle gradient/overlay to emphasize the center card if a hero image is used.
-- Accessibility:
-  - All interactive elements must be keyboard accessible.
-  - ARIA labels and appropriate semantic HTML.
-  - Color contrast adheres to accessibility standards.
-
-UI/UX guidelines (consistent with the provided style system):
-- Use a centered layout with a constrained max width (~1100–1200 px) and generous horizontal padding.
-- Maintain the typographic rhythm with the specified scale (H1 ~48–56 px, weight 700; body text 16 px, color #6B7280; labels 12–14 px).
-- Cards: white background, subtle border or shadow, rounded corners (10–12 px).
-- Primary CTA uses the brand dark color (#111827) with white text; hover/focus states exhibit a slightly darker shade or enhanced shadow.
-- Secondary/ghost actions use light borders or subtle backgrounds (e.g., #F8FAFC).
-- Spacing: vertical rhythm with ~24 px baseline and larger gaps (48–64 px) between major blocks.
-- Color usage follows the palette defined in the project (white canvas, deep text, muted metadata, subtle borders, orange accents for micro-actions, etc.).
-
-Mandatory Coding Standards — Runtime Safety
-CRITICAL: All generated code must guard against null/undefined values before calling array methods and guard API results as specified.
-
-- Supabase-like data handling (even if not used on this page): Use nullish coalescing for any potential array results:
-  - const items = data ?? []
-  - If used, guard with Array.isArray checks: Array.isArray(items) ? items.map(...) : []
-- Array methods: Never call on values that could be null/undefined; use:
-  - (items ?? []).map(...)
-  - or Array.isArray(items) ? items.map(...) : []
-- useState defaults for arrays: Initialize with proper types
-  - const [links, setLinks] = useState<string[]>([])
-  - const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-- API/Response shapes:
-  - const list = Array.isArray(response?.data) ? response.data : []
-- Optional chaining:
-  - Access nested API/db results with optional chaining: data?.field?.subfield
-- Destructuring with defaults:
-  - const { items = [], count = 0 } = response ?? {}
+Build a no-code friendly Persona & Appearance Editor for ConverseForms that lets creators define and refine AI agents representing public forms. Each agent encapsulates a persona (tone, instructions, style guide, prohibited topics), an appearance profile (avatar URL, color scheme, chat bubble settings), and constrained behaviors (verbosity caps, disallowed responses). The system should support live preview via sandboxed LLM or deterministic simulator, and expose REST endpoints to update persona and appearance. The project includes three associated pages: Agent Detail / Publish Page, Agent Builder / Editor, and Public Chat Page (Agent URL). All components must be robust against null/undefined values and strictly adhere to the runtime safety rules described in the project context.
 
 ## Components to Build
-- 404HeroCard
-  - Centered card containing:
-    - Title (H1)
-    - Subtitle text
-    - Optional illustration placeholder (SVG) or minimal decorative asset
-  - Search input with clear affordance
-  - Two primary CTAs: Go to Landing, Go to Dashboard
-- QuickLinksRow
-  - Horizontal row of links: Home, Help, Contact Support
-  - Each link styled as small, accessible text or pill, consistent with UI
-- BackNavigationBar (optional, if existing app uses a top navigation scaffold)
-  - Subtle bottom border to separate page from header
-- Accessibility and utility components
-  - Visually-hidden text for screen readers
-  - Focus ring style consistent with palette (#2563EB)
-  - Small utility chips (optional) for status hints (e.g., “Not found”, “Try search”)
+1) Persona & Appearance Editor (Editor UI)
+- Purpose: Core no-code interface to create/edit an agent.
+- Sub-features:
+  - Persona: tone, instructions, style guide, prohibited topics, maximum verbosity, allowed/blocked topics, response length caps.
+  - Appearance: avatar URL, primary/secondary color palette, chat bubble styling (bubble color, text color, bubble radius, avatar placement), font/tokens for chat UI.
+  - Contextual knowledge: attach contextual knowledge, FAQs, product information blocks.
+  - Validations: required fields (agent name, at least one persona attribute, avatar URL valid format), mutual exclusivity checks (e.g., cannot both enforce maximum verbosity and unlimited verbosity).
+  - Live Preview: sandboxed simulation of agent responses using either a sandbox LLM or deterministic simulator with the current persona and appearance. Preview must render transcript, with fields collection status (which fields are required, which collected).
+  - Field Definitions: define required form fields (name, email, etc.) with order, validation rules (required, pattern, min/max length), and conditional logic (show/hide questions based on previous answers).
+  - Save/Publish: draft vs. published state, versioning, and audit trail.
+
+2) Agent Detail / Publish Page
+- Purpose: Admin view summarizing agent configuration, publish state, public URL, embed options, usage metrics, and quick actions.
+- Sub-features:
+  - Summary Card: agent name, status (draft/published), last updated, author.
+  - Publish State: current publish status, publish date, revoke access toggle.
+  - Public URL & Embedding: copy URL, generate embed code (iframe), embed options (width/height, theme), and allow enabling/disabling public access.
+  - Usage Metrics: sessions count, messages exchanged, completion rate, field completion stats (per required field), recent activity.
+  - Quick Actions: Open Public Link, Copy URL, Regenerate URL, Revoke Access, Export/Import agent configuration.
+  - Validation & Safety: ensure URLs and embed codes are sanitized; ensure only published agents expose a public URL.
+  - History & Logs: display recent changes, who changed what and when.
+
+3) Public Chat Page (Agent URL)
+- Purpose: Full-page chat interface visitors see when they open a public agent link.
+- Behavior:
+  - Agent Initiation: agent starts conversation automatically without user authentication (unless optional verification is enabled).
+  - Field Collection: required fields are collected in natural dialogue; show progress indicator (e.g., Step X of Y) and transcript of prior messages.
+  - Transcript & Progress: render full chat transcript with timestamps, per-message metadata, and field completion status; allow user to review previously provided answers.
+  - Accessibility: ensure responsive UI, keyboard navigation, and ARIA attributes for assistive tech.
+  - Data Handling: store all messages and user-provided field values in a session entity; support webhook delivery on completion.
+  - Optional Verification: if enabled, require minimal authentication (e.g., email verification, one-time code) before continuing.
+  - No Authentication by Default: respondents are unauthenticated by default; implement robust session-scoped security (session IDs, secure cookies, CSRF considerations).
 
 ## Implementation Requirements
 
 ### Frontend
-- Layout
-  - Constrained container with max-width 1100–1200 px
-  - Centered hero block with responsive behavior (stack content on narrow screens)
-- Typography
-  - Use H1 (48–56 px) with color #0F1724 and weight 700
-  - Body copy at 16 px, color #6B7280
-- UI Elements
-  - Search field
-    - Background: #FFFFFF
-    - Border: 1 px #E6E7EB
-    - Radius: 8–10 px
-    - Focus ring: 2 px #2563EB
-    - Accessible label
-  - Buttons
-    - Landing/Home button: primary filled (#111827) with white text
-    - Dashboard button: secondary/ghost or secondary filled style as appropriate
-    - Hover/focus states: subtle shadow or color change
-  - Quick links
-    - Inline row or compact pill-style items
-- Data safety
-  - If any dynamic data is introduced (e.g., suggested pages or recent docs), ensure all arrays are handled with (array ?? []) or Array.isArray guards
-  - No assumptions that data is present; render fallback text if needed
-- State management
-  - If search is functional (client-side), use useState<string> for input and lightweight filtering of a local static dataset
-  - Initialize arrays with proper types: useState<string[]>([]) for any lists
-- Accessibility
-  - Contrast checks for text on background
-  - ARIA attributes for buttons and input
-  - Keyboard navigable
-- Styling system
-  - Follow the provided color palette, typography, and spacing
-  - Utilize the same card/shadow language as other components
-  - Ensure the page visually rises above any background with a subtle overlay or radial fade if used
+- Frameworks: React (with TypeScript), using a design system consistent with the project.
+- State Management: useState/useEffect for local component state, and a global state/store (e.g., Zustand or Redux) for agent data where appropriate.
+- Accessibility: all interactive elements accessible via keyboard; focus management after actions; readable color contrast.
+- UI Components to Build:
+  - Editor Panels:
+    - Persona Editor Panel: selects/toggles for tone, instruction blocks, style guide text areas, topic restrictions, verbosity controls.
+    - Appearance Panel: avatar uploader/URL input, color pickers for primary/secondary colors, chat bubble styles (colors, radius), font tokens.
+    - Context Knowledge Panel: blocks for FAQs, product info, and contextual snippets; drag-and-drop ordering for FAQs.
+    - Field Builder Panel: define fields with order, type (text, email, number, select, boolean), validation rules, conditional logic (show/hide), and placeholder hints.
+    - Live Preview Panel: sandboxed preview rendering a simulated agent session with the current persona/appearance; show transcript, simulated user responses, and field prompts.
+  - Publish & Detail Panels:
+    - Summary Cards: status, dates, author, public URL.
+    - Embedding Panel: embed code generator, resize options, theme integration options.
+    - Usage Metrics Cards: small graphs or sparklines (blue #2563EB, neutral grays).
+    - Quick Actions Bar: buttons for Open Public Link, Copy URL, Regenerate URL, Revoke Access.
+  - Public Chat Page:
+    - Chat Window: conversation area with agent messages, user messages, input field, and quick-reply suggestions.
+    - Progress Tracker: shows which required fields are remaining and progress percentage.
+    - Transcript View: collapsible transcript log, timestamped messages, and per-message metadata.
+    - Session Management: session-ID handling stored in secure httpOnly cookies or URL-safe tokens; display session status.
+- Validation & Safety:
+  - Guard all array operations: ensure any array-like data is validated or guarded with (items ?? []) or Array.isArray(items) ? items.map(...) : [].
+  - Supabase integration (if used): fetch results with const items = data ?? [] to avoid null results.
+  - Use proper default initial states: useState<T[]>([]) for arrays, useState<AgentPersona | null>(null) for single objects where appropriate.
+  - Validation rules for inputs: non-empty agent name, valid avatar URL, valid color hex codes, valid JSON for contextual blocks, and required fields defined in builder.
+- API Communication:
+  - Endpoints: PUT /api/agents/:id/persona, PUT /api/agents/:id/appearance (as per project context). Include proper validation, optimistic UI updates, and error handling.
+  - Data shaping: expect response shapes; guard with Array.isArray(response?.data) ? response.data : [] when mapping.
+  - Webhook integrations (optional): allow sending final session data to external systems on completion.
 
 ### Backend
-- Not required for this page since the project context specifies no API integrations
-- If future enhancements introduce dynamic quick links or search suggestions, design endpoints to fetch:
-  - QuickLinks: GET /api/links
-  - SearchIndex: GET /api/search?q=
-- All endpoints should return predictable shapes; validate with Array.isArray on response.data and guard against nulls
+- Data Models:
+  - Agent
+    - id: string
+    - name: string
+    - persona: Persona
+    - appearance: Appearance
+    - fields: FieldConfig[] (ordered)
+    - contextKnowledge: KnowledgeBlock[]
+    - status: 'draft' | 'published' | 'revoked'
+    - publishInfo: { url: string; embedCode?: string; publicEnabled: boolean; generatedAt: string; }
+    - metrics: { sessions: number; completions: number; completionRate?: number; lastActive?: string; }
+    - createdAt: string
+    - updatedAt: string
+  - Persona
+    - tone: string
+    - instructions: string[]
+    - styleGuide: string
+    - prohibitedTopics: string[]
+    - maxVerbosity: number
+    - allowedTopics?: string[]
+    - disallowedTopics?: string[]
+  - Appearance
+    - avatarUrl: string
+    - primaryColor: string (hex)
+    - secondaryColor: string (hex)
+    - bubbleColor: string (hex)
+    - bubbleTextColor: string (hex)
+    - bubbleRadius: number
+  - FieldConfig
+    - id: string
+    - key: string
+    - label: string
+    - type: 'text'|'email'|'number'|'select'|'boolean'|'date'
+    - required: boolean
+    - order: number
+    - validations: { pattern?: string; min?: number; max?: number; maxLength?: number; minLength?: number; }
+    - options?: string[]
+    - conditional?: { whenField: string; operator: 'equals'|'notEquals'|'in'| 'notIn'; value: any }
+  - KnowledgeBlock
+    - id: string
+    - type: 'faq'|'productInfo'|'policy'
+    - content: string
+  - Session
+    - id: string
+    - agentId: string
+    - startedAt: string
+    - messages: Message[]
+    - collectedFields: { [fieldKey]: string | boolean | number | null }
+  - Message
+    - role: 'agent'|'user'
+    - text: string
+    - timestamp: string
+    - fieldKey?: string
+- API Endpoints:
+  - PUT /api/agents/:id/persona
+    - Body: { tone, instructions, styleGuide, prohibitedTopics, maxVerbosity, allowedTopics, disallowedTopics }
+    - Validation: required agent exists; fields validated; guard strings; ensure maxVerbosity within bounds; sanitize inputs.
+    - Response: updated Persona object, status 200; error handling with meaningful messages.
+  - PUT /api/agents/:id/appearance
+    - Body: { avatarUrl, primaryColor, secondaryColor, bubbleColor, bubbleTextColor, bubbleRadius }
+    - Validation: URL format for avatarUrl; hex color validation; numeric bounds for radius.
+    - Response: updated Appearance object, status 200.
+  - GET /api/agents/:id/public-url
+    - Returns public URL and embed code snippets; ensure published agents only.
+  - POST /api/agents/:id/sessions
+    - Creates a new interactive session for a public chat; initialize required fields from FieldConfig; store session in DB.
+  - POST /api/sessions/:sessionId/messages
+    - Persist user/agent messages; update collectedFields accordingly.
+  - GET /api/agents/:id/metrics
+    - Returns usage metrics; ensure safe defaults if data missing: const metrics = data ?? {}.
+- Data Validation & Security:
+  - Always validate API inputs; reject invalid data with 4xx responses.
+  - Authentication: Admin endpoints secured; public chat endpoints do not require login by default; support optional verification path via config.
+  - Input sanitization: escape strings that are rendered in UI; avoid injection vulnerabilities.
+  - Data integrity: enforce referential integrity between Agent, Persona, Appearance, and FieldConfig.
 
 ### Integration
-- Route: Connect to your routing system (e.g., React Router) to render at all non-matched paths
-- Consistency: Ensure the 404 page uses the same layout container and typography as the rest of the app
-- Fallback behavior: If user lands on this page, navigation actions should route to the landing page or the dashboard depending on authentication state
+- Flow:
+  - Editor updates Persona and Appearance via PUT endpoints; UI reflects live preview by re-fetching agent data or optimistic updates with rollback on error.
+  - Agent Builder defines fields and conditional logic; builder saves to Agent model under fields array with order.
+  - When an agent is published, publishInfo.url is created/generated; the Public Chat Page uses agentId to fetch persona/appearance, required fields, and contextual knowledge to drive conversation.
+  - Public Chat Page initiates a new Session; agent’s persona and appearance govern responses; required fields are prompted in order; user input is captured and saved to the Session.
+  - Live Preview uses a sandbox LLM or deterministic simulator that applies persona constraints (tone, prohibited topics) and appearance style during responses.
+- Data Flow:
+  - Frontend always guards against null data: (data ?? []) and Array.isArray checks; default states are arrays with [].
 
 ## User Experience Flow
-1. User navigates to a non-existent route (e.g., /nonexistent-page).
-2. The app renders the 404 Not Found Page with a prominent, friendly message.
-3. The user sees a search box to quickly locate content or forms.
-4. The user can take one of the following:
-   - Click “Go to Landing” to return to the landing page.
-   - Click “Go to Dashboard” to return to the dashboard (if authenticated).
-   - Use Quick Links: Home, Help, Contact Support.
-5. If the route is a miss but content is found via search, optionally display a lightweight result list (guarded for null/undefined) or redirect accordingly.
-6. Page remains consistent with design system for a cohesive experience.
+1) Creator lands on Agent Builder / Editor (page_009)
+   - Create a new agent or edit an existing one.
+   - Define fields (name, email, etc.) with order and validations; set conditional logic to show/hide fields.
+   - Configure Persona: set tone (friendly, formal, concise), write concise instructions, attach a style guide, list prohibited topics, set max verbosity, and assign allowed/disallowed topics.
+   - Configure Appearance: upload or specify avatar URL, pick primary/secondary colors, set chat bubble colors and radius, set font tokens.
+   - Attach contextual knowledge: FAQs, product info, policies; arrange order.
+   - Preview: click Preview to run a sandbox session that demonstrates agent responses and field prompts.
+   - Save as Draft or Publish. If publishing, generate public URL and embed options.
+2) Admin views Agent Detail / Publish Page (page_008)
+   - See a summary of agent configuration, status, last updated, and author.
+   - View and copy the public URL; generate embed code; adjust embed dimensions and theme.
+   - Review usage metrics; monitor sessions, completions, and field-level completion rates.
+   - Use quick actions: Open Public Link, Copy URL, Regenerate URL, Revoke Access.
+   - Manage publish state: switch between draft and published; revoke access as needed.
+3) Public Chat Page (Agent URL) (page_010)
+   - Visitors open the public URL; no authentication required by default.
+   - The agent initiates the conversation; required fields are collected through natural dialogue.
+   - UI shows a live transcript of the chat, progress on required fields, and the remaining fields to fill.
+   - All messages and user-provided field values are stored in a Session; optional verification can be enabled for respondent login.
+   - On completion, optional webhook is triggered to push data to external systems.
 
 ## Technical Specifications
 
-- Data Models
-  - No server-side data required for this page.
-  - If future expansion introduces a small local dataset, define TypeScript interfaces:
-    - interface QuickLink { id: string; label: string; href: string; }
-    - interface SearchResult { id: string; title: string; snippet?: string; href: string; }
+### Data Models (Schema Snippets)
+- Agent: { id, name, persona, appearance, fields: FieldConfig[], contextKnowledge: KnowledgeBlock[], status, publishInfo, metrics, createdAt, updatedAt }
+- Persona: { tone: string, instructions: string[], styleGuide: string, prohibitedTopics: string[], maxVerbosity: number, allowedTopics?: string[], disallowedTopics?: string[] }
+- Appearance: { avatarUrl: string, primaryColor: string, secondaryColor: string, bubbleColor: string, bubbleTextColor: string, bubbleRadius: number }
+- FieldConfig: { id, key, label, type, required, order, validations: { pattern?, min?, max?, minLength?, maxLength? }, options?, conditional? }
+- KnowledgeBlock: { id, type: 'faq'|'productInfo'|'policy', content: string }
+- Session: { id, agentId, startedAt, messages: Message[], collectedFields: Record<string, any> }
+- Message: { role: 'agent'|'user', text: string, timestamp, fieldKey? }
 
-- API Endpoints
-  - Not required for current scope.
-  - If added later:
-    - GET /api/links -> returns { data: QuickLink[] } or { data: null } (guarded as data ?? [])
-    - GET /api/search?q= -> returns { data: SearchResult[] } or { data: null } (guarded similarly)
+### API Endpoints (Key Routes)
+- PUT /api/agents/:id/persona
+  - Body: { tone, instructions, styleGuide, prohibitedTopics, maxVerbosity, allowedTopics, disallowedTopics }
+  - Response: { agentId, persona }
+- PUT /api/agents/:id/appearance
+  - Body: { avatarUrl, primaryColor, secondaryColor, bubbleColor, bubbleTextColor, bubbleRadius }
+  - Response: { agentId, appearance }
+- GET /api/agents/:id/public-url
+  - Response: { publicUrl, embedCode }
+- POST /api/agents/:id/sessions
+  - Body: { optionalStartData? }
+  - Response: { sessionId, startedAt }
+- POST /api/sessions/:sessionId/messages
+  - Body: { role, text, fieldKey? }
+  - Response: { updatedSession, message }
+- GET /api/agents/:id/metrics
+  - Response: { sessions, completions, completionRate, lastActive }
 
-- Security
-  - No authentication requirements for the 404 page itself.
-  - If overriding to show Dashboard link only for authenticated users, rely on existing auth state at render.
+### Security
+- Admin endpoints require authentication/authorization.
+- Public endpoints require no auth by default; enable optional verification.
+- Input validation and sanitization on all endpoints.
+- Use CSRF protection for state-changing requests in the admin UI; ensure session tokens are HttpOnly when stored server-side.
 
-- Validation
-  - If user enters text into the search, ensure non-null, non-empty strings before attempting to filter.
-  - When rendering arrays (e.g., quick links), guard with Array.isArray or (array ?? []) to avoid runtime errors.
+### Validation
+- Input validation rules:
+  - Agent name: non-empty.
+  - Avatar URL: valid URL format (http/https).
+  - Colors: valid hex color codes (#RRGGBB).
+  - BubbleRadius: numeric, within reasonable bounds (0-24 px or as defined).
+  - Field definitions: required flag must be coherent with validations; conditional logic references existing field keys.
+  - Persona: maxVerbosity within configured bounds; prohibited topics as non-empty lists.
+- Runtime safety:
+  - Guard all array usages: (array ?? []).map(...) or Array.isArray(array) ? array.map(...) : [].
+  - Initialize state with correct types: useState<Type[]>([]) for arrays; useState<AgentPersona | null>(null) where appropriate.
+  - Use optional chaining: obj?.property?.nested when accessing API results.
+  - Destructure with defaults: const { items = [], count = 0 } = response ?? {}.
 
 ## Acceptance Criteria
-- [ ] The page renders with a centered hero message, supportive copy, a search input, and two primary actions (Landing and Dashboard).
-- [ ] Quick Links (Home, Help, Contact Support) are visible and clickable.
-- [ ] Search input accepts input and is accessible; does not crash with undefined data (guarded via (data ?? []) and Array.isArray checks).
-- [ ] No runtime errors when navigating to non-existent routes; the page maintains design system styling and layout.
-- [ ] All array operations are guarded to prevent calling map/filter/reduce on null/undefined values.
+- [ ] Editor can create/edit an agent with at least one field, a defined persona, and an appearance configuration; live preview accurately reflects persona and appearance.
+- [ ] Publishing an agent yields a valid public URL and embed code; the public page starts a live chat session and collects required fields in sequence.
+- [ ] Public chat page functions without authentication by default; optional verification path works; transcripts and progress persist in the session store.
+- [ ] All API endpoints validate input and guard against null/undefined results; runtime array operations are guarded as specified.
+- [ ] UI components adhere to the provided visual style, accessibility standards, and design tokens; interactions have smooth micro-interactions and accessible focus states.
 
 ## UI/UX Guidelines
-Apply the project’s design system:
-- White page canvas (#FFFFFF)
-- Muted metadata (#6B7280) for non-primary text
-- Deep charcoal (#0F1724) for headings
-- Subtle borders/shadows (#E6E7EB, rgba(15,23,36,0.06))
-- Primary CTA (#111827)
-- Accent color (orange #FF6A00) may be used sparingly for micro-interactions or focus
-- Ensure the page remains consistent with the 12-column grid, responsive spacing, and typography rules described earlier
+Apply the project's design system:
+- Follow the color palette, typography, spacing, and card design patterns described in the Visual Style section.
+- Maintain a clean, modern, and minimal aesthetic; content-first with clear call-to-actions.
+- Use centered hero content for focal emphasis in global views while keeping body content left-aligned for lists and detailed panels.
+- Keep interactions consistent: hover lifts, focus rings, and subtle motion for feedback.
+- Ensure responsive behavior for builder, detail, and public chat pages; maintain legibility on smaller viewports.
 
 ## Visual Style
-Maintain consistency with the provided Visual Style section:
-- Card-based, clean, minimal, with centered hero and elevated card
-- Accessible typography and color contrasts
-- Subtle motion for focus and hover states
-- No external API dependencies for this page unless future needs arise
+
+Color Palette, Typography, and Layout details are provided in the prompt (already enumerated). Implement the exact color tokens and typography hierarchy to ensure visual consistency with the project’s design language.
+
+### Key Design Elements
+- Card Design: white cards with soft borders or shadows; hover lift interactions.
+- Navigation: top bar and side nav patterns as described.
+- Data Visualization: minimal, low-ink charts for metrics.
+- Interactive Elements: primary/secondary/tertiary button system reflecting the specified color tokens.
+
+### Mandatory Coding Standards — Runtime Safety
+CRITICAL: All generated code must guard against null/undefined values before calling array methods (.map, .filter, .reduce, etc.).
+- Supabase results: use nullish coalescing: const items = data ?? [].
+- Array methods: (items ?? []).map(...) or Array.isArray(items) ? items.map(...) : [].
+- React useState: initialize with correct type, e.g., useState<T[]>([]).
+- API response shapes: const list = Array.isArray(response?.data) ? response.data : [].
+- Optional chaining: use obj?.property?.nested.
+- Destructuring with defaults: const { items = [], count = 0 } = response ?? {}.
 
 ---
 
-Generate the complete, detailed prompt now so an AI development tool can implement the 404 Not Found Page with the above requirements.
+If you need this prompt tailored for a specific AI development tool (e.g., a particular prompt template engine, LLM orchestration framework, or a repository structure you’re using), tell me the target environment and I’ll adapt the prompts and formatting accordingly.
 
 === SUCCESS CRITERIA ===
 # Success Criteria Checklist
